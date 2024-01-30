@@ -5,6 +5,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.PS4Controller.Axis;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -27,6 +28,7 @@ public class RobotContainer {
     private final int translationAxis = XboxController.Axis.kLeftY.value;
     private final int strafeAxis = XboxController.Axis.kLeftX.value;
     private final int rotationAxis = XboxController.Axis.kRightX.value;
+    private final int shooterAngle = XboxController.Axis.kRightTrigger.value - XboxController.Axis.kLeftTrigger.value;
 
     /* Driver Buttons */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
@@ -34,7 +36,7 @@ public class RobotContainer {
 
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
-
+    private final Shooter s_Shooter = new Shooter();
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -45,6 +47,13 @@ public class RobotContainer {
                 () -> -driver.getRawAxis(strafeAxis), 
                 () -> -driver.getRawAxis(rotationAxis)
                 //() -> {return false;}
+            )
+        );
+
+        s_Shooter.setDefaultCommand(
+            new TeleopShooter(
+                s_Shooter,
+                () -> driver.getRawAxis(shooterAngle)
             )
         );
 
