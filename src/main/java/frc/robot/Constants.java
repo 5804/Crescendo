@@ -14,11 +14,15 @@ import frc.lib.util.SwerveModuleConstants;
 public final class Constants {
     public static final double stickDeadband = 0.1;
 
+    public static final class Shooter {
+        public static final double shooterAngleEncoderOffset = 0;
+    }
+
     public static final class Swerve {
         public static final int pigeonID = 1;
 
         public static final COTSTalonFXSwerveConstants chosenModule =  //TODO: This must be tuned to specific robot
-        COTSTalonFXSwerveConstants.SDS.MK4i.Falcon500(COTSTalonFXSwerveConstants.SDS.MK4i.driveRatios.L2);
+        COTSTalonFXSwerveConstants.SDS.MK4i.KrakenX60(COTSTalonFXSwerveConstants.SDS.MK4i.driveRatios.L2); // Determines type of motor (KrakenX60/Falcon500)
 
         /* Drivetrain Constants */
         public static final double trackWidth = 0.50; //TODO: This must be tuned to specific robot
