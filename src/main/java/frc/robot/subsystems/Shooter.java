@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -14,12 +15,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 
 public class Shooter extends SubsystemBase {
 
   private TalonFX rightShooterMotor;
   private TalonFX leftShooterMotor;
-  private TalonFX intakeShooterMotor;
+  private TalonFX indexerMotor;
   private TalonFX rightShooterAngleMotor;
   private TalonFX leftShooterAngleMotor;
   private CANcoder shooterAngleEncoder;
@@ -33,13 +35,13 @@ public class Shooter extends SubsystemBase {
     shooterAngleEncoder = new CANcoder(53);
     rightShooterMotor = new TalonFX(52);
     leftShooterMotor = new TalonFX(51);
-    intakeShooterMotor = new TalonFX(54);
-    rightShooterAngleMotor = new TalonFX(1943);
-    leftShooterAngleMotor = new TalonFX(3252);
+    indexerMotor = new TalonFX(54);
+    rightShooterAngleMotor = new TalonFX(61);
+    leftShooterAngleMotor = new TalonFX(60);
     leftShooterMotor.setInverted(true);
     
-    //shooterAngleEncoder.configMagnetOffset(Constants.Shooter.shooterAngleEncoderOffset);
-    //shooterAngleEncoder.configSensorDirection(true);
+    rightShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+    leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
  public Rotation2d getCANcoder(){
@@ -51,20 +53,19 @@ public class Shooter extends SubsystemBase {
 
   }
 
-  public void shoot(double speed) {
-    rightShooterMotor.set(speed);
-    leftShooterMotor.set(speed);
+  public void shoot(double shootSpeed) {
+    rightShooterMotor.set(shootSpeed);
+    leftShooterMotor.set(shootSpeed);
     //intakeShooterMotor.set(speed);
 
   }
 
-  public void load(double speedIntake) {
-    intakeShooterMotor.set(speedIntake);
+  public void load(double indexerSpeed) {
+    indexerMotor.set(indexerSpeed);
   }
 
-  double shooterSpeed = 1.0;
   boolean enableShooter = true;
-  public Command setShooterSpeedCommand() {
+  public Command setShooterSpeedCommand(double shooterSpeed) {
     return runOnce(
             () -> {
               if (enableShooter == true) {
@@ -94,21 +95,46 @@ public class Shooter extends SubsystemBase {
         .withName("DisableShooter");
   }
 */
-  boolean loadEnable = true;
-  public Command loadCommand() {
+  boolean indexerEnable = true;
+  public Command setIndexerSpeedCommand() {
     return runOnce(
             () -> {
-              if (loadEnable == true) {
-                load(0.4); 
-                loadEnable = false;
+              if (indexerEnable == true) {
+                load(0.8); 
+                indexerEnable = false;
               } else {
                 load(0);
-                loadEnable = true;
+                indexerEnable = true;
               }
             })
         .withName("Load");
   }
 
+  public Command raiseShooter() {
+    return runOnce(
+      () -> {
+        angleShooter();
+      }
+    );
+  }
+
+  public Command lowerShooter() {
+    return runOnce(
+      () -> {
+        angleShooter();
+      }
+    );
+  }
+
+  public Command angleShooter() {
+    return run(
+      () -> { 
+        //rightShooterAngleMotor.set(1);
+        //leftShooterAngleMotor.set(1);
+      }
+    );
+  }
+/* // Shooter speed adjust buttons
   public Command increaseShooterSpeed() { // Increase and decrease speed commands are temporary features for debugging
     return runOnce(
       () -> {
@@ -136,7 +162,7 @@ public class Shooter extends SubsystemBase {
       })
       .withName("DecreaseShooterSpeed");
   }
-
+*/
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

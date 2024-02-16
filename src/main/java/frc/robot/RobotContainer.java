@@ -38,8 +38,8 @@ public class RobotContainer {
     private final JoystickButton bButton = new JoystickButton(driver, XboxController.Button.kB.value);
     private final JoystickButton aButton = new JoystickButton(driver, XboxController.Button.kA.value);
     private final JoystickButton xButton = new JoystickButton(driver, XboxController.Button.kX.value);
-    private final JoystickButton increaseShooterSpeedButton = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
-    private final JoystickButton decreaseShooterSpeedButton = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+    private final JoystickButton rightBumper = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
+    private final JoystickButton leftBumper = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
 
     private final POVButton dUp1 = new POVButton(driver, 0);
     private final POVButton dRight1 = new POVButton(driver, 90);
@@ -93,15 +93,17 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
-        bButton.onTrue(shooterSubsystem.setShooterSpeedCommand());
+        bButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(0.3));
         //bButton.toggleOnTrue(shooterSubsystem.enableShooter());
         //bButton.toggleOnFalse(shooterSubsystem.disableShooter());
-        xButton.onTrue(shooterSubsystem.loadCommand());
-        //increaseShooterSpeedButton.onTrue(shooterSubsystem.increaseShooterSpeed());
-        //decreaseShooterSpeedButton.onTrue(shooterSubsystem.decreaseShooterSpeed());
+        //xButton.onTrue(shooterSubsystem.loadCommand());
+        rightBumper.onTrue(shooterSubsystem.raiseShooter());
+        leftBumper.onTrue(shooterSubsystem.lowerShooter());
         //aButton.onTrue(shooterSubsystem.setShooterSpeedCommand(false));
 
         aButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
+        aButton.onTrue(shooterSubsystem.setIndexerSpeedCommand());
     }
 
     /**

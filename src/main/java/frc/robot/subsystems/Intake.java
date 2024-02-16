@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
@@ -15,7 +16,7 @@ public class Intake extends SubsystemBase {
     private CANcoder angleEncoder;
 
     public Intake() {
-        intakeMotor = new TalonFX(56); // Reset these valuse later
+        intakeMotor = new TalonFX(56);
         intakeMotor.setInverted(true);
         //angleMotor = new TalonFX(100);
         angleEncoder = new CANcoder(54);
@@ -25,13 +26,13 @@ public class Intake extends SubsystemBase {
         intakeMotor.set(speed);
     }
 
-    double intakeSpeed = 0.6;
+    double intakeSpeed = 0.8;
     boolean enableIntake = true;
     public Command setIntakeSpeedCommand() {
         return runOnce(
                 () -> {
                 if (enableIntake == true) {
-                    setIntakeSpeed(intakeSpeed); 
+                    setIntakeSpeed(intakeSpeed);
                     enableIntake = false;
                 } else {
                     setIntakeSpeed(0);
@@ -48,4 +49,3 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putNumber("IntakeAngle", rotations.getDegrees());
     }
 }
-
