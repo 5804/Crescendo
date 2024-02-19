@@ -93,8 +93,8 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
-        bButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(0.3));
+        //bButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        //xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(0.3));
         //bButton.toggleOnTrue(shooterSubsystem.enableShooter());
         //bButton.toggleOnFalse(shooterSubsystem.disableShooter());
         //xButton.onTrue(shooterSubsystem.loadCommand());
@@ -104,6 +104,9 @@ public class RobotContainer {
 
         aButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
         aButton.onTrue(shooterSubsystem.setIndexerSpeedCommand());
+
+        bButton.whileTrue(intakeSubsystem.raiseIntake());
+        xButton.whileTrue(intakeSubsystem.lowerIntake());
     }
 
     /**
@@ -113,7 +116,7 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
-        return new PathPlannerAuto("New New New Auto");
+        return new PathPlannerAuto("rotateAuto");
         //return new exampleAuto(s_Swerve);
     }
 }

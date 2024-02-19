@@ -14,6 +14,14 @@ import frc.lib.util.SwerveModuleConstants;
 public final class Constants {
     public static final double stickDeadband = 0.1;
 
+    public static final class Intake {
+        public static final int kSlotIdx0 = 0;
+        public static final int kSlotIdx1 = 1;
+        public final int test = 0;
+        public static final int kPIDLoopIdx = 0;
+        public static int kTimeoutMs = 30;
+    }
+
     public static final class Shooter {
         public static final double shooterAngleEncoderOffset = 0;
     }
