@@ -1,16 +1,29 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
@@ -18,32 +31,21 @@ public class Intake extends SubsystemBase {
     private TalonFX angleMotor;
     private CANcoder angleEncoder;
 
+    // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
+  private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
+  // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
+  private final MutableMeasure<Distance> m_distance = mutable(Meters.of(0));
+  // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
+  private final MutableMeasure<Velocity<Distance>> m_velocity = mutable(MetersPerSecond.of(0));
+    
     public Intake() {
         intakeMotor = new TalonFX(56);
         intakeMotor.setInverted(true);
         angleMotor = new TalonFX(59);
-        angleMotor.setInverted(true);
+        angleMotor.setInverted(false);
         angleMotor.setNeutralMode(NeutralModeValue.Coast);
+        angleMotor.setPosition(0);
         angleEncoder = new CANcoder(54);
-
-
-
-        /* Set relevant frame periods to be at least as fast as periodic rate */
-        // angleMotor.setStatusFramePeriod(
-        // StatusFrameEnhanced.Status_13_Base_PIDF0,
-        // 10,
-        // Constants.Intake.kTimeoutMs
-        // );
-
-        // angleMotor.setStatusFramePeriod(
-        // StatusFrameEnhanced.Status_10_MotionMagic,
-        // 10,
-        // Constants.Intake.kTimeoutMs
-        // );
-
-        // /* Set the peak and nominal outputs */
-        // angleMotor.configPeakOutputForward(1, Constants.Intake.kTimeoutMs);
-        // angleMotor.configPeakOutputReverse(-1, Constants.Intake.kTimeoutMs);
 
         /* Set Motion Magic gains in slot0 - see documentation */
 
@@ -51,36 +53,17 @@ public class Intake extends SubsystemBase {
 
         var slot0Configs = talonFXConfigs.Slot0;
         slot0Configs.kV = 0.12;
-        slot0Configs.kP = 0.11;
-        slot0Configs.kI = 0.5;
-        slot0Configs.kD = 0.001;
-        slot0Configs.kS = 0;
-
-        angleMotor.getConfigurator().apply(slot0Configs, 0.050);
+        slot0Configs.kP = 4.8;
+        slot0Configs.kI = 0;
+        slot0Configs.kD = 0.1;
+        slot0Configs.kS = 0.25;
 
         var motionMagicConfigs = talonFXConfigs.MotionMagic;
-
-        motionMagicConfigs.MotionMagicCruiseVelocity = 80;
-        motionMagicConfigs.MotionMagicAcceleration = 160;
-        motionMagicConfigs.MotionMagicJerk = 1600;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 0.2;
+        motionMagicConfigs.MotionMagicAcceleration = 0.1;
+        motionMagicConfigs.MotionMagicJerk = 0;
 
         angleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
-
-        // angleMotor.config_IntegralZone(Constants.Intake.kSlotIdx0, 200);
-        // angleMotor.configAllowableClosedloopError(Constants.Intake.kSlotIdx0, 400);
-
-        // /* Set Motion Magic gains in slot1 - see documentation */
-        // angleMotor.selectProfileSlot(Constants.Intake.kSlotIdx1, Constants.Intake.kPIDLoopIdx);
-        // angleMotor.config_kF(Constants.Intake.kSlotIdx1, 0.0714, Constants.Intake.kTimeoutMs);
-        // angleMotor.config_kP(Constants.Intake.kSlotIdx1, 0.1, Constants.Intake.kTimeoutMs);
-        // angleMotor.config_kI(Constants.Intake.kSlotIdx1, 0, Constants.Intake.kTimeoutMs);
-        // angleMotor.config_kD(Constants.Intake.kSlotIdx1, 0, Constants.Intake.kTimeoutMs);
-        // angleMotor.config_IntegralZone(Constants.Intake.kSlotIdx1, 200);
-        // angleMotor.configAllowableClosedloopError(Constants.Intake.kSlotIdx1, 100);
-
-        // /* Set acceleration and vcruise velocity - see documentation */
-        // angleMotor.configMotionCruiseVelocity(14000, Constants.Intake.kTimeoutMs);
-        // angleMotor.configMotionAcceleration(23000, Constants.Intake.kTimeoutMs);
     }
 
     public void setIntakeSpeed(double speed) {
@@ -118,6 +101,24 @@ public class Intake extends SubsystemBase {
         .withName("");
       }
     */
+
+      public void setAnglePosition(double anglePosition) {
+        MotionMagicVoltage request = new MotionMagicVoltage(0);
+
+        angleMotor.setControl(request.withPosition(anglePosition));
+      } // doesnt use encoder
+
+      public Command stow() {
+        return run(
+            () -> {
+                setAnglePosition(300);
+            }
+        ).finallyDo(
+            () -> {
+                setAngleSpeed(0);
+            }
+        );
+      }
 
     
       public void setAngleSpeed(double angleSpeed) {

@@ -44,10 +44,11 @@ public class Shooter extends SubsystemBase {
     leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
+  //not sure if we need this
  public Rotation2d getCANcoder(){
         return Rotation2d.fromRotations(shooterAngleEncoder.getAbsolutePosition().getValue());
     }
-
+  //and this
     public void resetToAbsolute(){
       double absolutePosition = getCANcoder().getRotations() - angleOffset.getRotations();
 
