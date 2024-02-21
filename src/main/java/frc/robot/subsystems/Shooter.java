@@ -4,8 +4,11 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,7 +27,7 @@ public class Shooter extends SubsystemBase {
   private TalonFX indexerMotor;
   private TalonFX rightShooterAngleMotor;
   private TalonFX leftShooterAngleMotor;
-  private CANcoder shooterAngleEncoder;
+  private CANcoder angleEncoder;
   private Rotation2d angleOffset;
 
  
@@ -32,21 +35,28 @@ public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
   public Shooter() {
 
-    shooterAngleEncoder = new CANcoder(53);
+    angleEncoder = new CANcoder(53);
     rightShooterMotor = new TalonFX(52);
     leftShooterMotor = new TalonFX(51);
     indexerMotor = new TalonFX(54);
     rightShooterAngleMotor = new TalonFX(61);
     leftShooterAngleMotor = new TalonFX(60);
+    leftShooterAngleMotor.setInverted(true);
     leftShooterMotor.setInverted(true);
+
+    rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
     
     rightShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
     leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+
+    var talonFXConfigs = new TalonFXConfiguration();
+    talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
+    talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
   }
 
   //not sure if we need this
  public Rotation2d getCANcoder(){
-        return Rotation2d.fromRotations(shooterAngleEncoder.getAbsolutePosition().getValue());
+        return Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValue());
     }
   //and this
     public void resetToAbsolute(){
@@ -111,30 +121,36 @@ public class Shooter extends SubsystemBase {
         .withName("Load");
   }
 
+
+  public void setAngleSpeed(double angleSpeed) {
+    leftShooterAngleMotor.set(angleSpeed);
+  }
+
   public Command raiseShooter() {
-    return runOnce(
-      () -> {
-        angleShooter();
-      }
-    );
-  }
-
-  public Command lowerShooter() {
-    return runOnce(
-      () -> {
-        angleShooter();
-      }
-    );
-  }
-
-  public Command angleShooter() {
     return run(
-      () -> { 
-        //rightShooterAngleMotor.set(1);
-        //leftShooterAngleMotor.set(1);
-      }
+        () -> {
+            setAngleSpeed(-0.1);
+        }
+    ).finallyDo(
+        () -> {
+            setAngleSpeed(0);
+        }
     );
-  }
+}
+
+public Command lowerShooter() {
+    return run(
+        () -> {
+            setAngleSpeed(0.1);
+        }
+    ).finallyDo(
+        () -> {
+            setAngleSpeed(0);
+        }
+    );
+}
+
+
 /* // Shooter speed adjust buttons
   public Command increaseShooterSpeed() { // Increase and decrease speed commands are temporary features for debugging
     return runOnce(
@@ -167,7 +183,7 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    Rotation2d rotations = Rotation2d.fromRotations(shooterAngleEncoder.getAbsolutePosition().getValue());
+    Rotation2d rotations = Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValue());
     SmartDashboard.putNumber("ShooterAngle", rotations.getDegrees());
   }
 }

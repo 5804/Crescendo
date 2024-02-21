@@ -7,9 +7,11 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +20,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,6 +33,9 @@ public class Intake extends SubsystemBase {
     private TalonFX intakeMotor;
     private TalonFX angleMotor;
     private CANcoder angleEncoder;
+    //DutyCycleOut angleMotorRequest = new DutyCycleOut(0.0);
+    //DigitalInput angleMotorForwardLimit = new DigitalInput(0);
+    
 
     // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
   private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
@@ -43,24 +49,25 @@ public class Intake extends SubsystemBase {
         intakeMotor.setInverted(true);
         angleMotor = new TalonFX(59);
         angleMotor.setInverted(false);
-        angleMotor.setNeutralMode(NeutralModeValue.Coast);
+        angleMotor.setNeutralMode(NeutralModeValue.Brake);
         angleMotor.setPosition(0);
         angleEncoder = new CANcoder(54);
 
         /* Set Motion Magic gains in slot0 - see documentation */
 
         var talonFXConfigs = new TalonFXConfiguration();
-
+        talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
+        talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         var slot0Configs = talonFXConfigs.Slot0;
-        slot0Configs.kV = 0.12;
-        slot0Configs.kP = 4.8;
+        slot0Configs.kV = 7.38;
+        slot0Configs.kP = 20;
         slot0Configs.kI = 0;
-        slot0Configs.kD = 0.1;
-        slot0Configs.kS = 0.25;
+        slot0Configs.kD = 0;
+        slot0Configs.kS = 0;
 
         var motionMagicConfigs = talonFXConfigs.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 0.2;
-        motionMagicConfigs.MotionMagicAcceleration = 0.1;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 1;
+        motionMagicConfigs.MotionMagicAcceleration = 1.2;
         motionMagicConfigs.MotionMagicJerk = 0;
 
         angleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
@@ -111,7 +118,19 @@ public class Intake extends SubsystemBase {
       public Command stow() {
         return run(
             () -> {
-                setAnglePosition(300);
+                setAnglePosition(0.011);
+            }
+        ).finallyDo(
+            () -> {
+                setAngleSpeed(0);
+            }
+        );
+      }
+
+      public Command deploy() {
+        return run(
+            () -> {
+                setAnglePosition(0.35);
             }
         ).finallyDo(
             () -> {
@@ -123,6 +142,8 @@ public class Intake extends SubsystemBase {
     
       public void setAngleSpeed(double angleSpeed) {
         angleMotor.set(angleSpeed);
+        //angleMotorRequest.Output = angleSpeed;
+        //angleMotor.setControl(angleMotorRequest.withOutput(angleSpeed).withLimitForwardMotion(angleMotorForwardLimit));
       }
 
     public Command lowerIntake() {

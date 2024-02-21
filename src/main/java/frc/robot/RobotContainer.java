@@ -100,17 +100,18 @@ public class RobotContainer {
         //bButton.toggleOnTrue(shooterSubsystem.enableShooter());
         //bButton.toggleOnFalse(shooterSubsystem.disableShooter());
         //xButton.onTrue(shooterSubsystem.loadCommand());
-        rightBumper.onTrue(shooterSubsystem.raiseShooter());
-        leftBumper.onTrue(shooterSubsystem.lowerShooter());
+        rightBumper.whileTrue(shooterSubsystem.raiseShooter());
+        leftBumper.whileTrue(shooterSubsystem.lowerShooter());
         //aButton.onTrue(shooterSubsystem.setShooterSpeedCommand(false));
 
         //aButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
         //aButton.onTrue(shooterSubsystem.setIndexerSpeedCommand());
 
-        bButton.whileTrue(intakeSubsystem.raiseIntake());
-        xButton.whileTrue(intakeSubsystem.lowerIntake());
-        //aButton.whileTrue(intakeSubsystem.stow());
-        aButton.onTrue(LEDSubsystem.SetAnimationFire());
+        //bButton.whileTrue(intakeSubsystem.raiseIntake());
+        //xButton.whileTrue(intakeSubsystem.lowerIntake());
+        aButton.whileTrue(intakeSubsystem.stow());
+        bButton.whileTrue(intakeSubsystem.deploy());
+        //aButton.onTrue(LEDSubsystem.SetAnimationFire());
     }
 
     /**
