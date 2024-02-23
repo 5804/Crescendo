@@ -6,10 +6,13 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -29,8 +32,7 @@ public class Shooter extends SubsystemBase {
   private TalonFX leftShooterAngleMotor;
   private CANcoder angleEncoder;
   private Rotation2d angleOffset;
-
- 
+  public TimeOfFlight TOF;
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -41,10 +43,12 @@ public class Shooter extends SubsystemBase {
     indexerMotor = new TalonFX(54);
     rightShooterAngleMotor = new TalonFX(61);
     leftShooterAngleMotor = new TalonFX(60);
-    leftShooterAngleMotor.setInverted(true);
+    //rightShooterAngleMotor.setInverted(false);
+    //leftShooterAngleMotor.setInverted(true);
     leftShooterMotor.setInverted(true);
 
-    rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
+    TOF = new TimeOfFlight(1);
+    TOF.setRangingMode(RangingMode.Short, 30);
     
     rightShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
     leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -52,6 +56,23 @@ public class Shooter extends SubsystemBase {
     var talonFXConfigs = new TalonFXConfiguration();
     talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
     talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
+    var slot0Configs = talonFXConfigs.Slot0;
+    slot0Configs.kV = 3;
+    slot0Configs.kP = 10;
+    slot0Configs.kI = 0;
+    slot0Configs.kD = 0;
+    slot0Configs.kS = 0;
+
+    var motionMagicConfigs = talonFXConfigs.MotionMagic;
+    motionMagicConfigs.MotionMagicCruiseVelocity = 1;
+    motionMagicConfigs.MotionMagicAcceleration = 1;
+    motionMagicConfigs.MotionMagicJerk = 0;
+
+    leftShooterAngleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
+    rightShooterAngleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
+    rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
+
   }
 
   //not sure if we need this
@@ -126,7 +147,7 @@ public class Shooter extends SubsystemBase {
     leftShooterAngleMotor.set(angleSpeed);
   }
 
-  public Command raiseShooter() {
+  public Command lowerShooter() {
     return run(
         () -> {
             setAngleSpeed(-0.1);
@@ -138,7 +159,7 @@ public class Shooter extends SubsystemBase {
     );
 }
 
-public Command lowerShooter() {
+public Command raiseShooter() {
     return run(
         () -> {
             setAngleSpeed(0.1);
@@ -150,6 +171,35 @@ public Command lowerShooter() {
     );
 }
 
+  public void setAnglePosition(double anglePosition) {
+        MotionMagicVoltage request = new MotionMagicVoltage(0);
+
+        leftShooterAngleMotor.setControl(request.withPosition(anglePosition));
+      } // doesnt use encoder
+
+      public Command stow() {
+        return run(
+            () -> {
+                setAnglePosition(0.011);
+            }
+        ).finallyDo(
+            () -> {
+                setAngleSpeed(0);
+            }
+        );
+      }
+
+      public Command amp() {
+        return run(
+            () -> {
+                setAnglePosition(0.1375);
+            }
+        ).finallyDo(
+            () -> {
+                setAngleSpeed(0);
+            }
+        );
+      }
 
 /* // Shooter speed adjust buttons
   public Command increaseShooterSpeed() { // Increase and decrease speed commands are temporary features for debugging
@@ -184,6 +234,12 @@ public Command lowerShooter() {
   public void periodic() {
     // This method will be called once per scheduler run
     Rotation2d rotations = Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValue());
+    Rotation2d motorRotations = Rotation2d.fromRotations(leftShooterAngleMotor.getPosition().getValue());
     SmartDashboard.putNumber("ShooterAngle", rotations.getDegrees());
+    double motorVelocity = leftShooterAngleMotor.getVelocity().getValue();
+    SmartDashboard.putNumber("ShooterIntakeAngle", rotations.getDegrees());
+    SmartDashboard.putNumber("ShooterIntakeAngleEncoder", motorRotations.getDegrees());
+    SmartDashboard.putNumber("ShooterMotorVelocity", motorVelocity);
+    SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
   }
 }

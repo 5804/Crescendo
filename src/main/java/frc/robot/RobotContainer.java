@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LED;
+// import frc.robot.subsystems.LED;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
 
@@ -67,7 +67,7 @@ public class RobotContainer {
     private final Swerve s_Swerve = new Swerve();
     private final Shooter shooterSubsystem = new Shooter();
     private final Intake intakeSubsystem = new Intake();
-    private final LED LEDSubsystem = new LED();
+    // private final LED LEDSubsystem = new LED();
 
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -109,9 +109,12 @@ public class RobotContainer {
 
         //bButton.whileTrue(intakeSubsystem.raiseIntake());
         //xButton.whileTrue(intakeSubsystem.lowerIntake());
-        aButton.whileTrue(intakeSubsystem.stow());
-        bButton.whileTrue(intakeSubsystem.deploy());
-        //aButton.onTrue(LEDSubsystem.SetAnimationFire());
+        aButton.whileTrue(shooterSubsystem.stow());
+        bButton.whileTrue(shooterSubsystem.amp());
+        // aButton.onTrue(LEDSubsystem.SetAnimationFire());
+
+        //bButton.whileTrue(intakeSubsystem.stow());
+        //xButton.whileTrue(intakeSubsystem.deploy());
     }
 
     /**
