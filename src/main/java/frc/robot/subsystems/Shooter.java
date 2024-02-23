@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
   private TalonFX leftShooterAngleMotor;
   private CANcoder angleEncoder;
   private Rotation2d angleOffset;
-  public TimeOfFlight TOF;
+  // public TimeOfFlight TOF;
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -47,8 +47,8 @@ public class Shooter extends SubsystemBase {
     //leftShooterAngleMotor.setInverted(true);
     leftShooterMotor.setInverted(true);
 
-    TOF = new TimeOfFlight(1);
-    TOF.setRangingMode(RangingMode.Short, 30);
+    // TOF = new TimeOfFlight(1);
+    // TOF.setRangingMode(RangingMode.Short, 30);
     
     rightShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
     leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -201,6 +201,12 @@ public Command raiseShooter() {
         );
       }
 
+      public boolean hasNote() {
+        // double range = TOF.getRange();
+        // return range < 20;
+        return true;
+      }
+
 /* // Shooter speed adjust buttons
   public Command increaseShooterSpeed() { // Increase and decrease speed commands are temporary features for debugging
     return runOnce(
@@ -240,6 +246,6 @@ public Command raiseShooter() {
     SmartDashboard.putNumber("ShooterIntakeAngle", rotations.getDegrees());
     SmartDashboard.putNumber("ShooterIntakeAngleEncoder", motorRotations.getDegrees());
     SmartDashboard.putNumber("ShooterMotorVelocity", motorVelocity);
-    SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
+    // SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
   }
 }

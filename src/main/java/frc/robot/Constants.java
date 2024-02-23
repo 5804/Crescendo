@@ -20,10 +20,6 @@ public final class Constants {
         public final int test = 0;
         public static final int kPIDLoopIdx = 0;
         public static int kTimeoutMs = 30;
-        public void setIntakeSpeed(double d) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'setIntakeSpeed'");
-        }
     }
 
     public static final class Shooter {
