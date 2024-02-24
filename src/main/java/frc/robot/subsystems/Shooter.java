@@ -195,7 +195,19 @@ public Command raiseShooter() {
       public Command amp() {
         return run(
             () -> {
-                setAnglePosition(0.255); // 0.076
+                setAnglePosition(0.255);
+            }
+        ).finallyDo(
+            () -> {
+                setAngleSpeed(0);
+            }
+        );
+      }
+
+      public Command deploy() {
+        return run(
+            () -> {
+                setAnglePosition(0.14);
             }
         ).finallyDo(
             () -> {

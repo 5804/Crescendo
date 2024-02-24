@@ -98,7 +98,6 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         //bButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
         //xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(0.3));
         //bButton.toggleOnTrue(shooterSubsystem.enableShooter());
@@ -124,18 +123,20 @@ public class RobotContainer {
         //bButton.whileTrue(intakeSubsystem.stow());
         //xButton.whileTrue(intakeSubsystem.deploy());
 
+        // Deploy Shooter and Intake
         xButton.onTrue(
-            shooterSubsystem.amp()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.25;})
+            shooterSubsystem.deploy()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;}) //0.25
             .andThen(intakeSubsystem.deploy())
             .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.33;})
             .andThen(shooterSubsystem.stow())
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
             );
 
+        // Stow Shooter and Intake
         aButton.onTrue(
-            shooterSubsystem.amp()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.25;})
+            shooterSubsystem.deploy()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;})
             // .andThen(new ParallelCommandGroup())
             .andThen(intakeSubsystem.stow())
             .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
@@ -143,7 +144,15 @@ public class RobotContainer {
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
             );
         
-        bButton.onTrue(shooterSubsystem.amp());
+        rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        
+        yButton.onTrue(shooterSubsystem.amp());
+        bButton.onTrue(shooterSubsystem.stow());
+        
+        rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        leftBumper.onTrue(intakeSubsystem.setIntakeSpeedCommand());
+        leftBumper.onTrue(shooterSubsystem.setIndexerSpeedCommand());
+        
 
     }
 
