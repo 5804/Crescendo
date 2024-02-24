@@ -10,6 +10,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
@@ -25,13 +26,13 @@ import frc.robot.Robot;
 
 public class Shooter extends SubsystemBase {
 
-  private TalonFX rightShooterMotor;
-  private TalonFX leftShooterMotor;
-  private TalonFX indexerMotor;
-  private TalonFX rightShooterAngleMotor;
-  private TalonFX leftShooterAngleMotor;
-  private CANcoder angleEncoder;
-  private Rotation2d angleOffset;
+  public TalonFX rightShooterMotor;
+  public TalonFX leftShooterMotor;
+  public TalonFX indexerMotor;
+  public TalonFX rightShooterAngleMotor;
+  public TalonFX leftShooterAngleMotor;
+  public CANcoder angleEncoder;
+  public Rotation2d angleOffset;
   // public TimeOfFlight TOF;
 
   /** Creates a new Shooter. */
@@ -43,38 +44,40 @@ public class Shooter extends SubsystemBase {
     indexerMotor = new TalonFX(54);
     rightShooterAngleMotor = new TalonFX(61);
     leftShooterAngleMotor = new TalonFX(60);
-    //rightShooterAngleMotor.setInverted(false);
-    //leftShooterAngleMotor.setInverted(true);
     leftShooterMotor.setInverted(true);
 
     // TOF = new TimeOfFlight(1);
     // TOF.setRangingMode(RangingMode.Short, 30);
-    
-    rightShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
-    leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
 
     var talonFXConfigs = new TalonFXConfiguration();
     talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
     talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
 
     var slot0Configs = talonFXConfigs.Slot0;
+    slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
     slot0Configs.kV = 3;
-    slot0Configs.kP = 10;
+    slot0Configs.kP = 40;
     slot0Configs.kI = 0;
     slot0Configs.kD = 0;
     slot0Configs.kS = 0;
 
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 1;
-    motionMagicConfigs.MotionMagicAcceleration = 1;
+    motionMagicConfigs.MotionMagicCruiseVelocity = 3;
+    motionMagicConfigs.MotionMagicAcceleration = 3;
     motionMagicConfigs.MotionMagicJerk = 0;
 
     leftShooterAngleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
     rightShooterAngleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
+
+    rightShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+    leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+    rightShooterAngleMotor.setInverted(true);
+    leftShooterAngleMotor.setInverted(true);
+
     rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
 
   }
-
+/* 
   //not sure if we need this
  public Rotation2d getCANcoder(){
         return Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValue());
@@ -84,7 +87,7 @@ public class Shooter extends SubsystemBase {
       double absolutePosition = getCANcoder().getRotations() - angleOffset.getRotations();
 
   }
-
+*/
   public void shoot(double shootSpeed) {
     rightShooterMotor.set(shootSpeed);
     leftShooterMotor.set(shootSpeed);
@@ -180,7 +183,7 @@ public Command raiseShooter() {
       public Command stow() {
         return run(
             () -> {
-                setAnglePosition(0.011);
+                setAnglePosition(0.0);
             }
         ).finallyDo(
             () -> {
@@ -192,7 +195,7 @@ public Command raiseShooter() {
       public Command amp() {
         return run(
             () -> {
-                setAnglePosition(0.1375);
+                setAnglePosition(0.255); // 0.076
             }
         ).finallyDo(
             () -> {

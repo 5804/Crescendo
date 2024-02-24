@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -35,12 +36,15 @@ public class RobotContainer {
     private final JoystickButton leftTrigger = new JoystickButton(driver, XboxController.Axis.kLeftTrigger.value);
 
     /* Driver Buttons */
-    private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
+    private final JoystickButton yButton = new JoystickButton(driver, XboxController.Button.kY.value);
     private final JoystickButton bButton = new JoystickButton(driver, XboxController.Button.kB.value);
     private final JoystickButton aButton = new JoystickButton(driver, XboxController.Button.kA.value);
     private final JoystickButton xButton = new JoystickButton(driver, XboxController.Button.kX.value);
     private final JoystickButton rightBumper = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
     private final JoystickButton leftBumper = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+
+    private final JoystickButton rightMenu = new JoystickButton(driver, XboxController.Button.kStart.value);
+    private final JoystickButton leftMenu = new JoystickButton(driver, XboxController.Button.kBack.value);
 
     private final POVButton dUp1 = new POVButton(driver, 0);
     private final POVButton dRight1 = new POVButton(driver, 90);
@@ -94,14 +98,14 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         //bButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
         //xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(0.3));
         //bButton.toggleOnTrue(shooterSubsystem.enableShooter());
         //bButton.toggleOnFalse(shooterSubsystem.disableShooter());
         //xButton.onTrue(shooterSubsystem.loadCommand());
-        rightBumper.whileTrue(shooterSubsystem.raiseShooter());
-        leftBumper.whileTrue(shooterSubsystem.lowerShooter());
+        //rightBumper.whileTrue(shooterSubsystem.amp());
+        //leftBumper.whileTrue(shooterSubsystem.stow());
         //aButton.onTrue(shooterSubsystem.setShooterSpeedCommand(false));
 
         //aButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
@@ -109,12 +113,38 @@ public class RobotContainer {
 
         //bButton.whileTrue(intakeSubsystem.raiseIntake());
         //xButton.whileTrue(intakeSubsystem.lowerIntake());
-        aButton.whileTrue(shooterSubsystem.stow());
-        bButton.whileTrue(shooterSubsystem.amp());
+        //aButton.whileTrue(intakeSubsystem.stow());
+        //bButton.whileTrue(intakeSubsystem.deploy());
         // aButton.onTrue(LEDSubsystem.SetAnimationFire());
+
+        //xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        //xButton.onTrue(shooterSubsystem.setIndexerSpeedCommand());
+        //xButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
 
         //bButton.whileTrue(intakeSubsystem.stow());
         //xButton.whileTrue(intakeSubsystem.deploy());
+
+        xButton.onTrue(
+            shooterSubsystem.amp()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.25;})
+            .andThen(intakeSubsystem.deploy())
+            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.33;})
+            .andThen(shooterSubsystem.stow())
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+            );
+
+        aButton.onTrue(
+            shooterSubsystem.amp()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.25;})
+            // .andThen(new ParallelCommandGroup())
+            .andThen(intakeSubsystem.stow())
+            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+            .andThen(shooterSubsystem.stow())
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+            );
+        
+        bButton.onTrue(shooterSubsystem.amp());
+
     }
 
     /**

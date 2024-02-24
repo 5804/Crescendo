@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,9 +31,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
-    private TalonFX intakeMotor;
-    private TalonFX angleMotor;
-    private CANcoder angleEncoder;
+    public TalonFX intakeMotor;
+    public TalonFX angleMotor;
+    public CANcoder angleEncoder;
     //DutyCycleOut angleMotorRequest = new DutyCycleOut(0.0);
     //DigitalInput angleMotorForwardLimit = new DigitalInput(0);
     
@@ -48,9 +49,7 @@ public class Intake extends SubsystemBase {
         intakeMotor = new TalonFX(56);
         intakeMotor.setInverted(true);
         angleMotor = new TalonFX(59);
-        angleMotor.setInverted(false);
-        angleMotor.setNeutralMode(NeutralModeValue.Brake);
-        angleMotor.setPosition(0);
+        // angleMotor.setPosition(0);
         angleEncoder = new CANcoder(54);
 
         /* Set Motion Magic gains in slot0 - see documentation */
@@ -59,18 +58,21 @@ public class Intake extends SubsystemBase {
         talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
         talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         var slot0Configs = talonFXConfigs.Slot0;
-        slot0Configs.kV = 7.38;
-        slot0Configs.kP = 20;
+        slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
+        slot0Configs.kV = 7;
+        slot0Configs.kP = 50;
         slot0Configs.kI = 0;
-        slot0Configs.kD = 0;
+        slot0Configs.kD = 3.375;
         slot0Configs.kS = 0;
 
         var motionMagicConfigs = talonFXConfigs.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 1;
-        motionMagicConfigs.MotionMagicAcceleration = 1.2;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 3;
+        motionMagicConfigs.MotionMagicAcceleration = 1.5;
         motionMagicConfigs.MotionMagicJerk = 0;
 
         angleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
+        angleMotor.setInverted(false);
+        angleMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
     public void setIntakeSpeed(double speed) {
@@ -118,7 +120,7 @@ public class Intake extends SubsystemBase {
       public Command stow() {
         return run(
             () -> {
-                setAnglePosition(0.011);
+                setAnglePosition(0.0175);
             }
         ).finallyDo(
             () -> {
