@@ -7,8 +7,10 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -127,6 +129,9 @@ public class RobotContainer {
         //xButton.whileTrue(intakeSubsystem.deploy());
 
         // Deploy Shooter and Intake
+
+        leftMenu.toggleOnTrue(transform());
+
         xButton.onTrue(transform());
 
         // Stow Shooter and Intake
@@ -135,7 +140,7 @@ public class RobotContainer {
         rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         
         bButton.onTrue(shooterSubsystem.amp());
-        dDown1.onTrue(shooterSubsystem.stow());
+        //dDown1.onTrue(shooterSubsystem.stow());
         
         //rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
         leftBumper.onTrue(smartIntake());
@@ -145,7 +150,14 @@ public class RobotContainer {
         // rightTrigger.onTrue(shooterSubsystem.setIndexerSpeedCommand());
 
         rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        yButton.onTrue(shooterSubsystem.setIndexerSpeedCommand(0.8));
+        //yButton.onTrue(shooterSubsystem.setIndexerSpeedCommand(0.8));
+
+        //WIP
+        yButton.whileTrue(
+            shooterSubsystem.setIndexerSpeed(0.8)
+            //.until(() ->{return shooterSubsystem.TOF.getRange() > 300;})
+            //.andThen(shooterSubsystem.setIndexerSpeed(0))
+            );
         
 
     }
@@ -174,8 +186,7 @@ public class RobotContainer {
     public Command indexWithTOF() {
         return shooterSubsystem.setIndexerSpeed(-0.05)
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
-            .andThen(shooterSubsystem.setIndexerSpeed(0))
-            .andThen(shooterSubsystem.setShooterSpeedCommand(1))
+            .andThen(shooterSubsystem.setIndexerSpeedRunOnce(0))
             .withName("INDEX NOTE WITH TOF");
     }
 

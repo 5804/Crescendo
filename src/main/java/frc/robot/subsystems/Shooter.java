@@ -74,6 +74,8 @@ public class Shooter extends SubsystemBase {
     rightShooterAngleMotor.setInverted(true);
     leftShooterAngleMotor.setInverted(true);
     indexerMotor.setNeutralMode(NeutralModeValue.Brake);
+    leftShooterMotor.setNeutralMode(NeutralModeValue.Brake);
+    rightShooterMotor.setNeutralMode(NeutralModeValue.Brake);
 
     rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
 
@@ -114,7 +116,7 @@ public class Shooter extends SubsystemBase {
             })
         .withName("SetShooterSpeed");
   }
-  
+
   public Command setShooterSpeed(double shooterSpeed) {
     return run(
             () -> {
@@ -160,9 +162,16 @@ public class Shooter extends SubsystemBase {
       () -> {
         load(indexerSpeed);
       }
-    );
+    ).finallyDo(() -> {load(0);});
   }
 
+  public Command setIndexerSpeedRunOnce(double indexerSpeed) {
+    return runOnce(
+      () -> {
+        load(indexerSpeed);
+      }
+    );
+  }
 
   public void setAngleSpeed(double angleSpeed) {
     leftShooterAngleMotor.set(angleSpeed);
