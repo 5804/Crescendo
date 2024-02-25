@@ -75,20 +75,33 @@ public class Intake extends SubsystemBase {
         angleMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
-    public void setIntakeSpeed(double speed) {
+    public void load(double speed) {
         intakeMotor.set(speed);
     }
+
+    public Command setIntakeSpeed(double intakeSpeed) {
+        return run(
+          () -> {
+            load(intakeSpeed);
+          }
+        );
+      }
 
     double intakeSpeed = 0.8;
     boolean enableIntake = true;
     public Command setIntakeSpeedCommand() {
         return runOnce(
                 () -> {
+                if (angleEncoder.getAbsolutePosition().getValue() < 0.145) {
+                    intakeSpeed = 0;
+                } else {
+                    intakeSpeed = 0.8;
+                }
                 if (enableIntake == true) {
-                    setIntakeSpeed(intakeSpeed);
+                    load(intakeSpeed);
                     enableIntake = false;
                 } else {
-                    setIntakeSpeed(0);
+                    load(0);
                     enableIntake = true;
                 }
                 })

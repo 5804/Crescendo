@@ -33,7 +33,7 @@ public class Shooter extends SubsystemBase {
   public TalonFX leftShooterAngleMotor;
   public CANcoder angleEncoder;
   public Rotation2d angleOffset;
-  // public TimeOfFlight TOF;
+  public TimeOfFlight TOF;
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -46,8 +46,8 @@ public class Shooter extends SubsystemBase {
     leftShooterAngleMotor = new TalonFX(60);
     leftShooterMotor.setInverted(true);
 
-    // TOF = new TimeOfFlight(1);
-    // TOF.setRangingMode(RangingMode.Short, 30);
+    TOF = new TimeOfFlight(3);
+    TOF.setRangingMode(RangingMode.Short, 30);
 
     var talonFXConfigs = new TalonFXConfiguration();
     talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
@@ -73,6 +73,7 @@ public class Shooter extends SubsystemBase {
     leftShooterAngleMotor.setNeutralMode(NeutralModeValue.Brake);
     rightShooterAngleMotor.setInverted(true);
     leftShooterAngleMotor.setInverted(true);
+    indexerMotor.setNeutralMode(NeutralModeValue.Brake);
 
     rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
 
@@ -113,6 +114,15 @@ public class Shooter extends SubsystemBase {
             })
         .withName("SetShooterSpeed");
   }
+  
+  public Command setShooterSpeed(double shooterSpeed) {
+    return run(
+            () -> {
+                shoot(shooterSpeed);
+            })
+        .withName("SetShooterSpeed RUN");
+  }
+
 /*
   public Command enableShooter() {
     return runOnce(
@@ -131,11 +141,11 @@ public class Shooter extends SubsystemBase {
   }
 */
   boolean indexerEnable = true;
-  public Command setIndexerSpeedCommand() {
+  public Command setIndexerSpeedCommand(double indexerSpeed) {
     return runOnce(
             () -> {
               if (indexerEnable == true) {
-                load(0.8); 
+                load(indexerSpeed); 
                 indexerEnable = false;
               } else {
                 load(0);
@@ -143,6 +153,14 @@ public class Shooter extends SubsystemBase {
               }
             })
         .withName("Load");
+  }
+
+  public Command setIndexerSpeed(double indexerSpeed) {
+    return run(
+      () -> {
+        load(indexerSpeed);
+      }
+    );
   }
 
 
@@ -181,15 +199,16 @@ public Command raiseShooter() {
       } // doesnt use encoder
 
       public Command stow() {
-        return run(
+        return runOnce(
             () -> {
                 setAnglePosition(0.0);
             }
-        ).finallyDo(
-            () -> {
-                setAngleSpeed(0);
-            }
         );
+        // .finallyDo(
+        //     () -> {
+        //         setAngleSpeed(0);
+        //     }
+        // );
       }
 
       public Command amp() {
@@ -197,7 +216,8 @@ public Command raiseShooter() {
             () -> {
                 setAnglePosition(0.255);
             }
-        ).finallyDo(
+        )
+        .finallyDo(
             () -> {
                 setAngleSpeed(0);
             }
@@ -209,11 +229,12 @@ public Command raiseShooter() {
             () -> {
                 setAnglePosition(0.14);
             }
-        ).finallyDo(
-            () -> {
-                setAngleSpeed(0);
-            }
         );
+        // .finallyDo(
+        //     () -> {
+        //         setAngleSpeed(0);
+        //     }
+        // );
       }
 
       public boolean hasNote() {
@@ -261,6 +282,6 @@ public Command raiseShooter() {
     SmartDashboard.putNumber("ShooterIntakeAngle", rotations.getDegrees());
     SmartDashboard.putNumber("ShooterIntakeAngleEncoder", motorRotations.getDegrees());
     SmartDashboard.putNumber("ShooterMotorVelocity", motorVelocity);
-    // SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
+    SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
   }
 }

@@ -4,6 +4,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -27,14 +28,16 @@ public class RobotContainer {
     /* Controllers */
     private final Joystick driver = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
-
+    Timer timer = new Timer();
     /* Drive Controls */
     private final int translationAxis = XboxController.Axis.kLeftY.value;
     private final int strafeAxis = XboxController.Axis.kLeftX.value;
     private final int rotationAxis = XboxController.Axis.kRightX.value;
-    private final JoystickButton rightTrigger = new JoystickButton(driver, XboxController.Axis.kRightTrigger.value);
-    private final JoystickButton leftTrigger = new JoystickButton(driver, XboxController.Axis.kLeftTrigger.value);
+    // private final JoystickButton rightTrigger = new JoystickButton(driver, XboxController.Axis.kRightTrigger.value);
+    // private final JoystickButton leftTrigger = new JoystickButton(driver, XboxController.Axis.kLeftTrigger.value);
 
+    // Trigger leftTrigger1 = new Trigger(() -> rightTrigger.getAsBoolean() > 0.5);
+    // Trigger rightTrigger1 = new Trigger(() -> driver.getRightTriggerAxis() > 0.5);
     /* Driver Buttons */
     private final JoystickButton yButton = new JoystickButton(driver, XboxController.Button.kY.value);
     private final JoystickButton bButton = new JoystickButton(driver, XboxController.Button.kB.value);
@@ -124,38 +127,73 @@ public class RobotContainer {
         //xButton.whileTrue(intakeSubsystem.deploy());
 
         // Deploy Shooter and Intake
-        xButton.onTrue(
-            shooterSubsystem.deploy()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;}) //0.25
-            .andThen(intakeSubsystem.deploy())
-            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.33;})
-            .andThen(shooterSubsystem.stow())
-            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
-            );
+        xButton.onTrue(transform());
 
         // Stow Shooter and Intake
-        aButton.onTrue(
-            shooterSubsystem.deploy()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;})
-            // .andThen(new ParallelCommandGroup())
-            .andThen(intakeSubsystem.stow())
-            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
-            .andThen(shooterSubsystem.stow())
-            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
-            );
+        aButton.onTrue(stow());
         
         rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         
-        yButton.onTrue(shooterSubsystem.amp());
-        bButton.onTrue(shooterSubsystem.stow());
+        bButton.onTrue(shooterSubsystem.amp());
+        dDown1.onTrue(shooterSubsystem.stow());
         
+        //rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        leftBumper.onTrue(smartIntake());
+
+        // rightTrigger.onTrue()
+        // Temp?
+        // rightTrigger.onTrue(shooterSubsystem.setIndexerSpeedCommand());
+
         rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        leftBumper.onTrue(intakeSubsystem.setIntakeSpeedCommand());
-        leftBumper.onTrue(shooterSubsystem.setIndexerSpeedCommand());
+        yButton.onTrue(shooterSubsystem.setIndexerSpeedCommand(0.8));
         
 
     }
 
+    public Command transform() {
+        return shooterSubsystem.deploy()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;}) //0.25
+            .andThen(intakeSubsystem.deploy())
+            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.33;})
+            .andThen(shooterSubsystem.stow())
+            // .andThen(new InstantCommand(() -> {}))
+            .withName("OUT (TRANSFORM)");
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;});
+    }
+
+    public Command stow() {
+        return shooterSubsystem.deploy()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;})
+            // .andThen(new ParallelCommandGroup())
+            .andThen(intakeSubsystem.stow())
+            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+            .andThen(shooterSubsystem.stow());
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+    }
+
+    public Command indexWithTOF() {
+        return shooterSubsystem.setIndexerSpeed(-0.05)
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0))
+            .andThen(shooterSubsystem.setShooterSpeedCommand(1))
+            .withName("INDEX NOTE WITH TOF");
+    }
+
+    public Command smartIntake() {
+        return  new ParallelCommandGroup(
+                shooterSubsystem.setIndexerSpeed(0.8),
+                intakeSubsystem.setIntakeSpeed(1)
+                )
+            .until(() -> {return shooterSubsystem.TOF.getRange() < 165;})
+            .andThen(new InstantCommand(() -> {shooterSubsystem.load(0);}))
+            .andThen(new InstantCommand(() -> {intakeSubsystem.load(0);}))
+            .andThen(indexWithTOF());
+            // .andThen(shooterSubsystem.setIndexerSpeed(-0.05))
+            // .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
+            // .andThen(shooterSubsystem.setIndexerSpeed(0))
+            // .andThen(shooterSubsystem.setIndexerSpeed(0))
+            // .andThen(intakeSubsystem.setIntakeSpeed(0))
+    }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -163,7 +201,18 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
-        return new PathPlannerAuto("rotateAuto");
+        return twoNoteAuto();
+        // return new PathPlannerAuto("rotateAuto");
         //return new exampleAuto(s_Swerve);
+    }
+
+    public Command twoNoteAuto() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return timer.get() > 2;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
     }
 }
