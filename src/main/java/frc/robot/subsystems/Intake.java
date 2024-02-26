@@ -59,16 +59,16 @@ public class Intake extends SubsystemBase {
         talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         var slot0Configs = talonFXConfigs.Slot0;
         slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
-        slot0Configs.kV = 7;
-        slot0Configs.kP = 50;
-        slot0Configs.kI = 0;
-        slot0Configs.kD = 3.375;
-        slot0Configs.kS = 0;
+        slot0Configs.kV = 7; // 7
+        slot0Configs.kP = 70; // 50 // 70
+        slot0Configs.kI = 0; // 0
+        slot0Configs.kD = 2; // 3.375 // 2
+        slot0Configs.kS = 0; // 0
 
         var motionMagicConfigs = talonFXConfigs.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 3;
-        motionMagicConfigs.MotionMagicAcceleration = 1.5;
-        motionMagicConfigs.MotionMagicJerk = 0;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 3; // 3
+        motionMagicConfigs.MotionMagicAcceleration = 2.75; // 1.5 /// 2.75
+        motionMagicConfigs.MotionMagicJerk = 0; // 0
 
         angleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
         angleMotor.setInverted(false);

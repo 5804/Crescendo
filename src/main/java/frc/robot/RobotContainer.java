@@ -28,7 +28,8 @@ import frc.robot.subsystems.Swerve;
  */
 public class RobotContainer {
     /* Controllers */
-    private final Joystick driver = new Joystick(0);
+    // private final CommandXboxController controller = new CommandXboxController(0);
+    private final CommandXboxController driver = new CommandXboxController(0);
     private final Joystick buttonBoard = new Joystick(1);
     Timer timer = new Timer();
     /* Drive Controls */
@@ -41,20 +42,20 @@ public class RobotContainer {
     // Trigger leftTrigger1 = new Trigger(() -> rightTrigger.getAsBoolean() > 0.5);
     // Trigger rightTrigger1 = new Trigger(() -> driver.getRightTriggerAxis() > 0.5);
     /* Driver Buttons */
-    private final JoystickButton yButton = new JoystickButton(driver, XboxController.Button.kY.value);
-    private final JoystickButton bButton = new JoystickButton(driver, XboxController.Button.kB.value);
-    private final JoystickButton aButton = new JoystickButton(driver, XboxController.Button.kA.value);
-    private final JoystickButton xButton = new JoystickButton(driver, XboxController.Button.kX.value);
-    private final JoystickButton rightBumper = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
-    private final JoystickButton leftBumper = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+    // private final JoystickButton yButton = new JoystickButton(driver, XboxController.Button.kY.value);
+    // private final JoystickButton bButton = new JoystickButton(driver, XboxController.Button.kB.value);
+    // private final JoystickButton aButton = new JoystickButton(driver, XboxController.Button.kA.value);
+    // private final JoystickButton xButton = new JoystickButton(driver, XboxController.Button.kX.value);
+    // private final JoystickButton rightBumper = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
+    // private final JoystickButton leftBumper = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
 
-    private final JoystickButton rightMenu = new JoystickButton(driver, XboxController.Button.kStart.value);
-    private final JoystickButton leftMenu = new JoystickButton(driver, XboxController.Button.kBack.value);
+    // private final JoystickButton rightMenu = new JoystickButton(driver, XboxController.Button.kStart.value);
+    // private final JoystickButton leftMenu = new JoystickButton(driver, XboxController.Button.kBack.value);
 
-    private final POVButton dUp1 = new POVButton(driver, 0);
-    private final POVButton dRight1 = new POVButton(driver, 90);
-    private final POVButton dDown1 = new POVButton(driver, 180);
-    private final POVButton dLeft1 = new POVButton(driver, 270);
+    // private final POVButton dUp1 = new POVButton(driver, 0);
+    // private final POVButton dRight1 = new POVButton(driver, 90);
+    // private final POVButton dDown1 = new POVButton(driver, 180);
+    // private final POVButton dLeft1 = new POVButton(driver, 270);
 
     final JoystickButton b1 = new JoystickButton(buttonBoard, 1);
     final JoystickButton b2 = new JoystickButton(buttonBoard, 2);
@@ -81,6 +82,9 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
+        s_Swerve.resetModulesToAbsolute();
+        s_Swerve.resetModulesToAbsolute();
+
         s_Swerve.setDefaultCommand(
             new TeleopSwerve(
                 s_Swerve, 
@@ -130,35 +134,56 @@ public class RobotContainer {
 
         // Deploy Shooter and Intake
 
-        leftMenu.toggleOnTrue(transform());
+        // driver.leftMenu.toggleOnTrue(transform());
+        driver.back().toggleOnTrue(transform());
+        // leftMenu.toggleOnTrue(transform());
 
-        xButton.onTrue(transform());
+        driver.x().onTrue(transform());
+        // xButton.onTrue(transform());
 
         // Stow Shooter and Intake
-        aButton.onTrue(stow());
+        driver.a().onTrue(stowParallel());
+        //aButton.onTrue(stow());
         
-        rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        driver.start().onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        // rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         
-        bButton.onTrue(shooterSubsystem.amp());
+        driver.b().onTrue(shooterSubsystem.amp());
+        // bButton.onTrue(shooterSubsystem.amp());
         //dDown1.onTrue(shooterSubsystem.stow());
         
         //rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        leftBumper.onTrue(smartIntake());
+        //driver.leftBumper().onTrue(smartIntake());
+        // leftBumper.onTrue(smartIntake());
 
         // rightTrigger.onTrue()
         // Temp?
         // rightTrigger.onTrue(shooterSubsystem.setIndexerSpeedCommand());
 
-        rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        //driver.rightBumper().onTrue(shooterSubsystem.setShooterSpeedCommand(1));
+        // rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
         //yButton.onTrue(shooterSubsystem.setIndexerSpeedCommand(0.8));
 
         //WIP
-        yButton.whileTrue(
-            shooterSubsystem.setIndexerSpeed(0.8)
-            //.until(() ->{return shooterSubsystem.TOF.getRange() > 300;})
-            //.andThen(shooterSubsystem.setIndexerSpeed(0))
-            );
+        // driver.y().onTrue(shooterSubsystem.setIndexerSpeed(0.8));
+        // yButton.whileTrue(
+        //     shooterSubsystem.setIndexerSpeed(0.8)
+        //     //.until(() ->{return shooterSubsystem.TOF.getRange() > 300;})
+        //     //.andThen(shooterSubsystem.setIndexerSpeed(0))
+        //     );
         
+        driver.rightTrigger(0.5).whileTrue(
+            shooterSubsystem.setShooterSpeed(1)
+            .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 100;})
+            .andThen(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8))
+            .finallyDo(() -> {
+                shooterSubsystem.load(0);
+                shooterSubsystem.shoot(0);})
+            );
+            
+        driver.leftTrigger(.2).whileTrue(smartIntake());
+        // controller.rightTrigger(.5).whileTrue(shooterSubsystem.setIndexerSpeed(.8));
+        // controller.leftTrigger(.5).whileTrue( smartIntake());
 
     }
 
@@ -183,6 +208,13 @@ public class RobotContainer {
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
     }
 
+    public Command stowParallel() {
+        return new ParallelCommandGroup(shooterSubsystem.deploy(), intakeSubsystem.stow())
+            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+            .andThen(shooterSubsystem.stow());
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+    }
+
     public Command indexWithTOF() {
         return shooterSubsystem.setIndexerSpeed(-0.05)
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
@@ -191,14 +223,20 @@ public class RobotContainer {
     }
 
     public Command smartIntake() {
-        return  new ParallelCommandGroup(
-                shooterSubsystem.setIndexerSpeed(0.8),
-                intakeSubsystem.setIntakeSpeed(1)
+        return  
+            new ParallelCommandGroup(
+                shooterSubsystem.setIndexerSpeed(1),
+                intakeSubsystem.setIntakeSpeed(0.8),
+                new InstantCommand(() -> {shooterSubsystem.setAnglePosition(0.0125);})
                 )
             .until(() -> {return shooterSubsystem.TOF.getRange() < 165;})
             .andThen(new InstantCommand(() -> {shooterSubsystem.load(0);}))
             .andThen(new InstantCommand(() -> {intakeSubsystem.load(0);}))
-            .andThen(indexWithTOF());
+            .andThen(indexWithTOF())
+            .finallyDo(() -> {
+                intakeSubsystem.load(0);
+                shooterSubsystem.setAnglePosition(0);
+            });
             // .andThen(shooterSubsystem.setIndexerSpeed(-0.05))
             // .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
             // .andThen(shooterSubsystem.setIndexerSpeed(0))

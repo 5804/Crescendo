@@ -55,16 +55,16 @@ public class Shooter extends SubsystemBase {
 
     var slot0Configs = talonFXConfigs.Slot0;
     slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
-    slot0Configs.kV = 3;
-    slot0Configs.kP = 40;
-    slot0Configs.kI = 0;
-    slot0Configs.kD = 0;
-    slot0Configs.kS = 0;
+    slot0Configs.kV = 8; // 3
+    slot0Configs.kP = 35; // 40 // 35
+    slot0Configs.kI = 0; // 0
+    slot0Configs.kD = 0; // 0
+    slot0Configs.kS = 0; // 0
 
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 3;
-    motionMagicConfigs.MotionMagicAcceleration = 3;
-    motionMagicConfigs.MotionMagicJerk = 0;
+    motionMagicConfigs.MotionMagicCruiseVelocity = 4.5; // 3 // 4.5
+    motionMagicConfigs.MotionMagicAcceleration = 4; // 3 // 4
+    motionMagicConfigs.MotionMagicJerk = 0; // 0
 
     leftShooterAngleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
     rightShooterAngleMotor.getConfigurator().apply(talonFXConfigs, 0.050);
@@ -125,6 +125,15 @@ public class Shooter extends SubsystemBase {
         .withName("SetShooterSpeed RUN");
   }
 
+
+  public Command setShooterSpeedRunOnce(double shooterSpeed) {
+    return runOnce(
+            () -> {
+                shoot(shooterSpeed);
+            })
+        .withName("SetShooterSpeed RUN");
+  }
+
 /*
   public Command enableShooter() {
     return runOnce(
@@ -162,7 +171,16 @@ public class Shooter extends SubsystemBase {
       () -> {
         load(indexerSpeed);
       }
-    ).finallyDo(() -> {load(0);});
+    ).finallyDo(() -> {load(0);}
+    );
+  }
+
+  public Command setIndexerSpeedNoFinallyDo(double indexerSpeed) {
+    return run(
+      () -> {
+        load(indexerSpeed);
+      }
+    );
   }
 
   public Command setIndexerSpeedRunOnce(double indexerSpeed) {
