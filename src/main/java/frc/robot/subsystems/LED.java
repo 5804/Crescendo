@@ -105,6 +105,17 @@ public class LED extends SubsystemBase {
     candle2.animate(colorflow);
   }
 
+  public static void orange(){
+    candle1.setLEDs(255, 150, 0);
+  }
+  public Command setOrangeCommand(){
+    return runOnce( 
+      () -> {
+        orange();
+      }
+    );
+  }
+
   public Command setGreenCommand() {
     return runOnce(
         () -> {

@@ -191,7 +191,9 @@ public class RobotContainer {
         // controller.leftTrigger(.5).whileTrue( smartIntake());\
 
         driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
+        driver.leftBumper().onTrue(LEDSubsystem.setOrangeCommand());
         driver.rightBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
+        driver.rightBumper().onTrue(new InstantCommand (() -> {LEDSubsystem.Rainbow();}));
 
     }
 
