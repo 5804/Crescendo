@@ -17,6 +17,7 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
@@ -34,6 +35,7 @@ public class Shooter extends SubsystemBase {
   public CANcoder angleEncoder;
   public Rotation2d angleOffset;
   public TimeOfFlight TOF;
+  public PWM ratchet;
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -48,6 +50,7 @@ public class Shooter extends SubsystemBase {
 
     TOF = new TimeOfFlight(3);
     TOF.setRangingMode(RangingMode.Short, 30);
+    ratchet = new PWM(0);
 
     var talonFXConfigs = new TalonFXConfiguration();
     talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
@@ -195,35 +198,44 @@ public class Shooter extends SubsystemBase {
     leftShooterAngleMotor.set(angleSpeed);
   }
 
-  public Command lowerShooter() {
-    return run(
-        () -> {
-            setAngleSpeed(-0.1);
-        }
-    ).finallyDo(
-        () -> {
-            setAngleSpeed(0);
-        }
-    );
-}
-
-public Command raiseShooter() {
-    return run(
-        () -> {
-            setAngleSpeed(0.1);
-        }
-    ).finallyDo(
-        () -> {
-            setAngleSpeed(0);
-        }
-    );
-}
-
+  double currentPosition = 0;
   public void setAnglePosition(double anglePosition) {
         MotionMagicVoltage request = new MotionMagicVoltage(0);
 
         leftShooterAngleMotor.setControl(request.withPosition(anglePosition));
       } // doesnt use encoder
+
+  public void activateRatchet() {
+    ratchet.setPosition(1);
+  }
+
+  public void deactivateRatchet() {
+    ratchet.setPosition(0);
+  }
+
+// public Command lowerShooter() {
+//     return run(
+//         () -> {
+//             setAnglePosition(currentPosition -= .1);
+//         }
+//     ).finallyDo(
+//         () -> {
+//             setAngleSpeed(0);
+//         }
+//     );
+// }
+
+// public Command raiseShooter() {
+//     return run(
+//         () -> {
+//             setAnglePosition(currentPosition += .1);
+//         }
+//     ).finallyDo(
+//         () -> {
+//             setAngleSpeed(0);
+//         }
+//     );
+//   }
 
       public Command stow() {
         return runOnce(
@@ -237,6 +249,7 @@ public Command raiseShooter() {
         //     }
         // );
       }
+
 
       public Command amp() {
         return run(
@@ -310,5 +323,6 @@ public Command raiseShooter() {
     SmartDashboard.putNumber("ShooterIntakeAngleEncoder", motorRotations.getDegrees());
     SmartDashboard.putNumber("ShooterMotorVelocity", motorVelocity);
     SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
+    SmartDashboard.putNumber("RatchetPosition", rotations.getDegrees());
   }
 }

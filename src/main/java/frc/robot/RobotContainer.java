@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.Intake;
-// import frc.robot.subsystems.LED;
+import frc.robot.subsystems.LED;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Swerve;
 
@@ -77,7 +77,7 @@ public class RobotContainer {
     private final Swerve s_Swerve = new Swerve();
     private final Shooter shooterSubsystem = new Shooter();
     private final Intake intakeSubsystem = new Intake();
-    // private final LED LEDSubsystem = new LED();
+    private final LED LEDSubsystem = new LED();
 
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -152,6 +152,10 @@ public class RobotContainer {
         // bButton.onTrue(shooterSubsystem.amp());
         //dDown1.onTrue(shooterSubsystem.stow());
         
+        //driver.povLeft().onTrue(LEDSubsystem.lightsOff());
+        //driver.povDown().onTrue(shooterSubsystem.lowerShooter());
+        //driver.povUp().onTrue(shooterSubsystem.raiseShooter());
+
         //rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
         //driver.leftBumper().onTrue(smartIntake());
         // leftBumper.onTrue(smartIntake());
@@ -175,15 +179,19 @@ public class RobotContainer {
         driver.rightTrigger(0.5).whileTrue(
             shooterSubsystem.setShooterSpeed(1)
             .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 100;})
-            .andThen(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setYellowCommand()))
             .finallyDo(() -> {
                 shooterSubsystem.load(0);
-                shooterSubsystem.shoot(0);})
+                shooterSubsystem.shoot(0);
+            })
             );
             
         driver.leftTrigger(.2).whileTrue(smartIntake());
         // controller.rightTrigger(.5).whileTrue(shooterSubsystem.setIndexerSpeed(.8));
-        // controller.leftTrigger(.5).whileTrue( smartIntake());
+        // controller.leftTrigger(.5).whileTrue( smartIntake());\
+
+        driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
+        driver.rightBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
 
     }
 
@@ -218,7 +226,7 @@ public class RobotContainer {
     public Command indexWithTOF() {
         return shooterSubsystem.setIndexerSpeed(-0.05)
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
-            .andThen(shooterSubsystem.setIndexerSpeedRunOnce(0))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.setGreenCommand()))
             .withName("INDEX NOTE WITH TOF");
     }
 
