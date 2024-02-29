@@ -47,7 +47,7 @@ public class Swerve extends SubsystemBase {
         AutoBuilder.configureHolonomic(
                 this::getPose, // Robot pose supplier
                 this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
-                () -> Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates()), // ChassisSpeeds supplier
+                () -> {return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());}, // ChassisSpeeds supplier
                 this::driveRobotRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                         new PIDConstants(2.45, 0.0, 0.9), // Translation PID constants -- P = 2.45
