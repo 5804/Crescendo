@@ -99,10 +99,38 @@ public class LED extends SubsystemBase {
     );
   }
 
+  public Command setRainbowCommand() {
+    return runOnce(
+        () -> {
+            Rainbow();
+        }
+    );
+  }
+
   public static void GreenFlow() {
     ColorFlowAnimation colorflow = new ColorFlowAnimation(0, 255, 0);
     candle1.animate(colorflow);
     candle2.animate(colorflow);
+  }
+
+  public static void orange(){
+    candle1.setLEDs(255, 150, 0);
+  }
+
+  public static void red(){
+    candle1.setLEDs(255, 0, 0);
+  }
+
+   public static void yellow(){
+    candle1.setLEDs(255, 255, 0);
+  }
+
+  public Command setOrangeCommand(){
+    return runOnce( 
+      () -> {
+        orange();
+      }
+    );
   }
 
   public Command setGreenCommand() {

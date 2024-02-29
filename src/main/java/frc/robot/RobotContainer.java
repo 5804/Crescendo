@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj.GenericHID;
@@ -179,7 +180,7 @@ public class RobotContainer {
         driver.rightTrigger(0.5).whileTrue(
             shooterSubsystem.setShooterSpeed(1)
             .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 100;})
-            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setYellowCommand()))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setRainbowCommand()))
             .finallyDo(() -> {
                 shooterSubsystem.load(0);
                 shooterSubsystem.shoot(0);
@@ -191,7 +192,9 @@ public class RobotContainer {
         // controller.leftTrigger(.5).whileTrue( smartIntake());\
 
         driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
-        driver.rightBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
+        driver.leftBumper().onTrue(LEDSubsystem.setOrangeCommand());
+        driver.rightBumper().whileTrue(smartClimb());
+        driver.rightBumper().onTrue(LEDSubsystem.setRainbowCommand());
 
     }
 
@@ -230,6 +233,13 @@ public class RobotContainer {
             .withName("INDEX NOTE WITH TOF");
     }
 
+    public Command smartClimb() {
+           return shooterSubsystem.climb()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.03;})
+            .andThen(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}))
+            .withName("Climbing");
+    }
+
     public Command smartIntake() {
         return  
             new ParallelCommandGroup(
@@ -244,6 +254,13 @@ public class RobotContainer {
             .finallyDo(() -> {
                 intakeSubsystem.load(0);
                 shooterSubsystem.setAnglePosition(0);
+                if (shooterSubsystem.TOF.getRange() > 165){
+                    LEDSubsystem.red();
+                } else if (shooterSubsystem.TOF.getRange() > 110){
+                    LEDSubsystem.yellow();
+                } else {
+                    LEDSubsystem.GreenFlow();
+                }
             });
             // .andThen(shooterSubsystem.setIndexerSpeed(-0.05))
             // .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})

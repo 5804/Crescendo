@@ -64,6 +64,15 @@ public class Shooter extends SubsystemBase {
     slot0Configs.kD = 0; // 0
     slot0Configs.kS = 0; // 0
 
+    var slot1Configs = talonFXConfigs.Slot1;
+    slot1Configs.GravityType = GravityTypeValue.Arm_Cosine;
+    slot1Configs.kV = 3; // 3
+    slot1Configs.kP = 10; // 40 // 35
+    slot1Configs.kI = 0; // 0
+    slot1Configs.kD = 0; // 0
+    slot1Configs.kS = 0; // 0
+    
+
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
     motionMagicConfigs.MotionMagicCruiseVelocity = 4.5; // 3 // 4.5
     motionMagicConfigs.MotionMagicAcceleration = 4; // 3 // 4
@@ -81,6 +90,7 @@ public class Shooter extends SubsystemBase {
     rightShooterMotor.setNeutralMode(NeutralModeValue.Brake);
 
     rightShooterAngleMotor.setControl(new Follower(leftShooterAngleMotor.getDeviceID(), true));
+
 
   }
 /* 
@@ -201,7 +211,6 @@ public class Shooter extends SubsystemBase {
   double currentPosition = 0;
   public void setAnglePosition(double anglePosition) {
         MotionMagicVoltage request = new MotionMagicVoltage(0);
-
         leftShooterAngleMotor.setControl(request.withPosition(anglePosition));
       } // doesnt use encoder
 
@@ -249,6 +258,20 @@ public class Shooter extends SubsystemBase {
         //     }
         // );
       }
+
+        public Command climb() {
+        return runOnce(
+            () -> {
+              MotionMagicVoltage request = new MotionMagicVoltage(0);
+              request.withSlot(1);
+              setAnglePosition(0.0);
+            }
+        );
+      }
+
+
+
+
 
 
       public Command amp() {
