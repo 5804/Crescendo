@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj.GenericHID;
@@ -192,7 +193,7 @@ public class RobotContainer {
 
         driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
         driver.leftBumper().onTrue(LEDSubsystem.setOrangeCommand());
-        driver.rightBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
+        driver.rightBumper().whileTrue(smartClimb());
         driver.rightBumper().onTrue(LEDSubsystem.setRainbowCommand());
 
     }
@@ -230,6 +231,13 @@ public class RobotContainer {
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
             .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.setGreenCommand()))
             .withName("INDEX NOTE WITH TOF");
+    }
+
+    public Command smartClimb() {
+           return shooterSubsystem.climb()
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.03;})
+            .andThen(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}))
+            .withName("Climbing");
     }
 
     public Command smartIntake() {
