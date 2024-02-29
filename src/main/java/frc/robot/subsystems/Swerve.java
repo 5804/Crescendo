@@ -50,9 +50,9 @@ public class Swerve extends SubsystemBase {
                 () -> Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates()), // ChassisSpeeds supplier
                 this::driveRobotRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                        new PIDConstants(2.45, 0.0, 0.9), // Translation PID constants -- P = 2.45
-                        new PIDConstants(1.225, 0.0, 0.0), // Rotation PID constants
-                        4.5, // Max module speed, in m/s
+                        new PIDConstants(2.75, 0.0, 0.5), // Translation PID constants -- P = 2.45
+                        new PIDConstants(15, 0.0, 0.15), // Rotation PID constants
+                        1, // Max module speed, in m/s
                         0.4, // Drive base radius in meters. Distance from robot center to furthest module.
                         new ReplanningConfig() // Default path replanning config. See the API for the options here
                 ),
@@ -166,6 +166,10 @@ public class Swerve extends SubsystemBase {
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
             SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
         }
+
+        SmartDashboard.putNumber("Odometry X", swerveOdometry.getPoseMeters().getX());
+        SmartDashboard.putNumber("Odometry Y", swerveOdometry.getPoseMeters().getY());
+        SmartDashboard.putNumber("Angle", swerveOdometry.getPoseMeters().getRotation().getDegrees());
     }
 }
 

@@ -258,8 +258,8 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
-        return twoNoteAuto();
-        // return new PathPlannerAuto("rotateAuto");
+        // return twoNoteAuto();
+        return new PathPlannerAuto("twoNoteAuto");
         //return new exampleAuto(s_Swerve);
     }
 
@@ -270,6 +270,13 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setIndexerSpeed(0.8))
             .until(() -> {return timer.get() > 2;})
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            .until(() -> {return timer.get() > 4;})
+            .andThen(
+                new ParallelCommandGroup(smartIntake(),
+                new PathPlannerAuto("2coneAuto"))
+                );
+
     }
 }
