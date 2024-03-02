@@ -4,8 +4,13 @@ import java.util.List;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,11 +24,14 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -94,6 +102,8 @@ public class RobotContainer {
     private final Intake intakeSubsystem = new Intake();
     private final LED LEDSubsystem = new LED();
 
+    private final SendableChooser<Command> chooser = new SendableChooser<>();
+
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -112,6 +122,12 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+
+        chooser.setDefaultOption("One Note Auto", oneNoteAuto());
+        chooser.addOption("S trajectory", followTrajectory(sTrajectory));
+        chooser.addOption("left trajectory", followTrajectory(leftTrajectory));
+        chooser.addOption("right trajectory", followTrajectory(rightTrajectory));
+        SmartDashboard.putData("Auto choices", chooser);
     }
 
     /**
@@ -283,79 +299,83 @@ public class RobotContainer {
             // .andThen(shooterSubsystem.setIndexerSpeed(0))
             // .andThen(intakeSubsystem.setIntakeSpeed(0))
     }
+
+        // Create config for trajectory
+        TrajectoryConfig config =
+            new TrajectoryConfig(
+                    1,
+                    1)
+                // Add kinematics to ensure max speed is actually obeyed
+                .setKinematics(Constants.Swerve.swerveKinematics);
+                // Apply the voltage constraint
+                // .addConstraint(autoVoltageConstraint);
+
+        // An example trajectory to follow. All units in meters.
+        Trajectory sTrajectory =
+            TrajectoryGenerator.generateTrajectory(
+                // Start at the origin facing the +X direction
+                new Pose2d(0, 0, new Rotation2d(0)),
+                // Pass through these two interior waypoints, making an 's' curve path
+                List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+                // End 3 meters straight ahead of where we started, facing forward
+                new Pose2d(3, 0, new Rotation2d(0)),
+                // Pass config
+                config);
+
+        Trajectory leftTrajectory =
+            TrajectoryGenerator.generateTrajectory(
+                // Start at the origin facing the +X direction
+                new Pose2d(0.68, 6.74, new Rotation2d(10.62)),
+                // Pass through these interior waypoints
+                List.of(new Translation2d(1.9, 6.99)),
+                // End 3 meters straight ahead of where we started, facing forward
+                new Pose2d(2.9, 6.98, new Rotation2d(0)),
+                // Pass config
+                config);
+
+        Trajectory rightTrajectory =
+            TrajectoryGenerator.generateTrajectory(
+                // Start at the origin facing the +X direction
+                new Pose2d(0.66, 4.38, new Rotation2d(-52.55)),
+                // Pass through these interior waypoints
+                List.of(new Translation2d(1.37, 3.73)),
+                // End 3 meters straight ahead of where we started, facing forward
+                new Pose2d(2.43, 3.86, new Rotation2d(26.05)),
+                // Pass config
+                config);
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        // An ExampleCommand will run in autonomous
-        // return twoNoteAuto();
-        return new PathPlannerAuto("twoNoteAuto");
-        // return new exampleAuto(s_Swerve);
+        // return oneNoteAuto();
+        // return new PathPlannerAuto("twoNoteAuto");
+        // return followTrajectory(sTrajectory);
+        return chooser.getSelected();
     }
 
-        // Create a voltage constraint to ensure we don't accelerate too fast
-    // var autoVoltageConstraint =
-    //     new DifferentialDriveVoltageConstraint(
-    //         new SimpleMotorFeedforward(
-    //             12,
-    //             0,
-    //             0),
-    //         s_Swerve.kinematics,
-    //         10);
+    public Command followTrajectory(Trajectory trajectory) {
+        var thetaController = new ProfiledPIDController(2.75, 0, 0, AutoConstants.kThetaControllerConstraints);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    // Create config for trajectory
-    TrajectoryConfig config =
-        new TrajectoryConfig(
-                AutoConstants.kMaxSpeedMetersPerSecond,
-                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-            // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(Constants.Swerve.swerveKinematics);
-            // Apply the voltage constraint
-            // .addConstraint(autoVoltageConstraint);
-    
+        HolonomicDriveController controller = new HolonomicDriveController(
+                new PIDController(2.75, 0, 0.5), 
+                new PIDController(2.75, 0, 0.5), 
+                thetaController
+            );
 
-    // An example trajectory to follow. All units in meters.
-    // Trajectory exampleTrajectory =
-    //     TrajectoryGenerator.generateTrajectory(
-    //         // Start at the origin facing the +X direction
-    //         new Pose2d(0, 0, new Rotation2d(0)),
-    //         // Pass through these two interior waypoints, making an 's' curve path
-    //         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-    //         // End 3 meters straight ahead of where we started, facing forward
-    //         new Pose2d(3, 0, new Rotation2d(0)),
-    //         // Pass config
-    //         config);
-
-    /*RamseteCommand ramseteCommand =
-        new RamseteCommand(exampleTrajectory, null, null, null, null, null)
-        new RamseteCommand(
-            exampleTrajectory,
-            s_Swerve::getPose,
-            new RamseteController(2.75, 0),
-            // new SimpleMotorFeedforward(
-            //     DriveConstants.ksVolts,
-            //     DriveConstants.kvVoltSecondsPerMeter,
-            //     DriveConstants.kaVoltSecondsSquaredPerMeter),
-            Constants.Swerve.swerveKinematics,
-            s_Swerve::getModuleStates
-            m_robotDrive::getWheelSpeeds,
-            new PIDController(DriveConstants.kPDriveVel, 0, 0),
-            new PIDController(DriveConstants.kPDriveVel, 0, 0),
-            // RamseteCommand passes volts to the callback
-            m_robotDrive::tankDriveVolts,
-            m_robotDrive);
-
-    Reset odometry to the initial pose of the trajectory, run path following
-    command, then stop at the end.
-    return Commands.runOnce(() -> m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose()))
-        .andThen(ramseteCommand)
-        .andThen(Commands.runOnce(() -> m_robotDrive.tankDriveVolts(0, 0)));
+        SwerveControllerCommand swerveControllerCommand =
+            new SwerveControllerCommand(sTrajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
+                
+        return Commands.runOnce(() -> s_Swerve.setPose(sTrajectory.getInitialPose()))
+            .andThen(swerveControllerCommand)
+            .andThen(Commands.runOnce(() -> s_Swerve.drive(new Translation2d(0,0), 0, false, false)));
+    }
         
-    }*/
 
-    public Command twoNoteAuto() {
+    public Command oneNoteAuto() {
         return new InstantCommand(() -> {timer.restart();})
             .andThen(shooterSubsystem.setShooterSpeed(1))
             .until(() -> {return timer.get() > 1;})
@@ -364,11 +384,11 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
             .andThen(transform())
-            .until(() -> {return timer.get() > 4;})
-            .andThen(
-                new ParallelCommandGroup(smartIntake(),
-                new PathPlannerAuto("2coneAuto"))
-                );
+            .until(() -> {return timer.get() > 4;});
+            // .andThen(
+            //     new ParallelCommandGroup(smartIntake(),
+            //     new PathPlannerAuto("2coneAuto"))
+            //     );
 
     }
 }
