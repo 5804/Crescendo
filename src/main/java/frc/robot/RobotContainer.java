@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -127,6 +128,12 @@ public class RobotContainer {
         chooser.addOption("S trajectory", followTrajectory(sTrajectory));
         chooser.addOption("left trajectory", followTrajectory(leftTrajectory));
         chooser.addOption("right trajectory", followTrajectory(rightTrajectory));
+        chooser.addOption("left timing", timingDriveLeftSide());
+        chooser.addOption("right timing", timingDriveRightSide());
+        chooser.addOption("pathFollowingLeft", 
+            new PathPlannerAuto("twoNoteAuto")
+            .finallyDo(() -> {s_Swerve.zeroHeading();})
+            );
         SmartDashboard.putData("Auto choices", chooser);
     }
 
@@ -138,66 +145,14 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        //bButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        //xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(0.3));
-        //bButton.toggleOnTrue(shooterSubsystem.enableShooter());
-        //bButton.toggleOnFalse(shooterSubsystem.disableShooter());
-        //xButton.onTrue(shooterSubsystem.loadCommand());
-        //rightBumper.whileTrue(shooterSubsystem.amp());
-        //leftBumper.whileTrue(shooterSubsystem.stow());
-        //aButton.onTrue(shooterSubsystem.setShooterSpeedCommand(false));
-
-        //aButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
-        //aButton.onTrue(shooterSubsystem.setIndexerSpeedCommand());
-
-        //bButton.whileTrue(intakeSubsystem.raiseIntake());
-        //xButton.whileTrue(intakeSubsystem.lowerIntake());
-        //aButton.whileTrue(intakeSubsystem.stow());
-        //bButton.whileTrue(intakeSubsystem.deploy());
-        // aButton.onTrue(LEDSubsystem.SetAnimationFire());
-
-        //xButton.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        //xButton.onTrue(shooterSubsystem.setIndexerSpeedCommand());
-        //xButton.onTrue(intakeSubsystem.setIntakeSpeedCommand());
-
-        //bButton.whileTrue(intakeSubsystem.stow());
-        //xButton.whileTrue(intakeSubsystem.deploy());
-
-        // Deploy Shooter and Intake
-
-        // driver.leftMenu.toggleOnTrue(transform());
-        driver.back().toggleOnTrue(transform());
-        // leftMenu.toggleOnTrue(transform());
-
         driver.x().onTrue(transform());
-        // xButton.onTrue(transform());
 
         // Stow Shooter and Intake
         driver.a().onTrue(stowParallel());
-        //aButton.onTrue(stow());
         
         driver.start().onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
-        // rightMenu.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         
         driver.b().onTrue(shooterSubsystem.amp());
-        // bButton.onTrue(shooterSubsystem.amp());
-        //dDown1.onTrue(shooterSubsystem.stow());
-        
-        //driver.povLeft().onTrue(LEDSubsystem.lightsOff());
-        //driver.povDown().onTrue(shooterSubsystem.lowerShooter());
-        //driver.povUp().onTrue(shooterSubsystem.raiseShooter());
-
-        //rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        //driver.leftBumper().onTrue(smartIntake());
-        // leftBumper.onTrue(smartIntake());
-
-        // rightTrigger.onTrue()
-        // Temp?
-        // rightTrigger.onTrue(shooterSubsystem.setIndexerSpeedCommand());
-
-        //driver.rightBumper().onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        // rightBumper.onTrue(shooterSubsystem.setShooterSpeedCommand(1));
-        //yButton.onTrue(shooterSubsystem.setIndexerSpeedCommand(0.8));
 
         //WIP
         // driver.y().onTrue(shooterSubsystem.setIndexerSpeed(0.8));
@@ -265,8 +220,8 @@ public class RobotContainer {
 
     public Command smartClimb() {
            return shooterSubsystem.climb()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.03;})
-            .andThen(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}))
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.03;})
+            .finallyDo(() -> {shooterSubsystem.deactivateRatchet();})
             .withName("Climbing");
     }
 
@@ -325,9 +280,9 @@ public class RobotContainer {
         Trajectory leftTrajectory =
             TrajectoryGenerator.generateTrajectory(
                 // Start at the origin facing the +X direction
-                new Pose2d(0.68, 6.74, new Rotation2d(10.62)),
+                new Pose2d(1.78, 6.74, new Rotation2d(55)),
                 // Pass through these interior waypoints
-                List.of(new Translation2d(1.9, 6.99)),
+                List.of(new Translation2d(1.9, 6.93)),
                 // End 3 meters straight ahead of where we started, facing forward
                 new Pose2d(2.9, 6.98, new Rotation2d(0)),
                 // Pass config
@@ -357,7 +312,7 @@ public class RobotContainer {
     }
 
     public Command followTrajectory(Trajectory trajectory) {
-        var thetaController = new ProfiledPIDController(2.75, 0, 0, AutoConstants.kThetaControllerConstraints);
+        ProfiledPIDController thetaController = new ProfiledPIDController(15, 0, 0, AutoConstants.kThetaControllerConstraints);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         HolonomicDriveController controller = new HolonomicDriveController(
@@ -367,9 +322,10 @@ public class RobotContainer {
             );
 
         SwerveControllerCommand swerveControllerCommand =
-            new SwerveControllerCommand(sTrajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
+            new SwerveControllerCommand(trajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
                 
-        return Commands.runOnce(() -> s_Swerve.setPose(sTrajectory.getInitialPose()))
+        return Commands.runOnce(
+            () -> s_Swerve.setPose(trajectory.getInitialPose()))
             .andThen(swerveControllerCommand)
             .andThen(Commands.runOnce(() -> s_Swerve.drive(new Translation2d(0,0), 0, false, false)));
     }
@@ -387,8 +343,24 @@ public class RobotContainer {
             .until(() -> {return timer.get() > 4;});
             // .andThen(
             //     new ParallelCommandGroup(smartIntake(),
-            //     new PathPlannerAuto("2coneAuto"))
+            //     new PathPlannerAuto("twoNoteAuto"))
             //     );
 
+    }
+
+    public Command timingDriveLeftSide() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(new RunCommand(()->{s_Swerve.driveLeft();}, s_Swerve))
+            .until(() -> {return timer.get() > 1;})
+            .andThen(new RunCommand(()->{s_Swerve.driveForward();}, s_Swerve))
+            .until(() -> {return timer.get() > 3;});
+    }
+
+    public Command timingDriveRightSide() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(new RunCommand(()->{s_Swerve.driveRight();}, s_Swerve))
+            .until(() -> {return timer.get() > 1;})
+            .andThen(new RunCommand(()->{s_Swerve.driveForward();}, s_Swerve))
+            .until(() -> {return timer.get() > 3;});
     }
 }
