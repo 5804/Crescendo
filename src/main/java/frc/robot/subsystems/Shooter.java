@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -115,6 +116,11 @@ public class Shooter extends SubsystemBase {
     indexerMotor.set(indexerSpeed);
   }
 
+   public void lowerNote() {
+    StatusSignal<Double> pos = indexerMotor.getPosition();
+    indexerMotor.setPosition(pos.getValueAsDouble() -2);
+  }
+
   boolean enableShooter = true;
   public Command setShooterSpeedCommand(double shooterSpeed) {
     return runOnce(
@@ -212,7 +218,7 @@ public class Shooter extends SubsystemBase {
   public void setAnglePosition(double anglePosition) {
         MotionMagicVoltage request = new MotionMagicVoltage(0);
         leftShooterAngleMotor.setControl(request.withPosition(anglePosition));
-      } // doesnt use encoder
+      }
 
   public void activateRatchet() {
     ratchet.setPosition(1);
@@ -259,8 +265,8 @@ public class Shooter extends SubsystemBase {
         // );
       }
 
-        public Command climb() {
-        return runOnce(
+      public Command climb() {
+        return run(
             () -> {
               MotionMagicVoltage request = new MotionMagicVoltage(0);
               request.withSlot(1);
@@ -268,11 +274,6 @@ public class Shooter extends SubsystemBase {
             }
         );
       }
-
-
-
-
-
 
       public Command amp() {
         return run(

@@ -1,8 +1,20 @@
 package frc.robot;
 
+import java.util.List;
+
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
@@ -11,10 +23,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LED;
@@ -235,8 +249,8 @@ public class RobotContainer {
 
     public Command smartClimb() {
            return shooterSubsystem.climb()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.03;})
-            .andThen(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}))
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.03;})
+            .andThen(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}))
             .withName("Climbing");
     }
 
@@ -257,6 +271,7 @@ public class RobotContainer {
                 if (shooterSubsystem.TOF.getRange() > 165){
                     LEDSubsystem.red();
                 } else if (shooterSubsystem.TOF.getRange() > 110){
+                    // shooterSubsystem.lowerNote();
                     LEDSubsystem.yellow();
                 } else {
                     LEDSubsystem.GreenFlow();
@@ -277,8 +292,68 @@ public class RobotContainer {
         // An ExampleCommand will run in autonomous
         // return twoNoteAuto();
         return new PathPlannerAuto("twoNoteAuto");
-        //return new exampleAuto(s_Swerve);
+        // return new exampleAuto(s_Swerve);
     }
+
+        // Create a voltage constraint to ensure we don't accelerate too fast
+    // var autoVoltageConstraint =
+    //     new DifferentialDriveVoltageConstraint(
+    //         new SimpleMotorFeedforward(
+    //             12,
+    //             0,
+    //             0),
+    //         s_Swerve.kinematics,
+    //         10);
+
+    // Create config for trajectory
+    TrajectoryConfig config =
+        new TrajectoryConfig(
+                AutoConstants.kMaxSpeedMetersPerSecond,
+                AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+            // Add kinematics to ensure max speed is actually obeyed
+            .setKinematics(Constants.Swerve.swerveKinematics);
+            // Apply the voltage constraint
+            // .addConstraint(autoVoltageConstraint);
+    
+
+    // An example trajectory to follow. All units in meters.
+    // Trajectory exampleTrajectory =
+    //     TrajectoryGenerator.generateTrajectory(
+    //         // Start at the origin facing the +X direction
+    //         new Pose2d(0, 0, new Rotation2d(0)),
+    //         // Pass through these two interior waypoints, making an 's' curve path
+    //         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+    //         // End 3 meters straight ahead of where we started, facing forward
+    //         new Pose2d(3, 0, new Rotation2d(0)),
+    //         // Pass config
+    //         config);
+
+    /*RamseteCommand ramseteCommand =
+        new RamseteCommand(exampleTrajectory, null, null, null, null, null)
+        new RamseteCommand(
+            exampleTrajectory,
+            s_Swerve::getPose,
+            new RamseteController(2.75, 0),
+            // new SimpleMotorFeedforward(
+            //     DriveConstants.ksVolts,
+            //     DriveConstants.kvVoltSecondsPerMeter,
+            //     DriveConstants.kaVoltSecondsSquaredPerMeter),
+            Constants.Swerve.swerveKinematics,
+            s_Swerve::getModuleStates
+            m_robotDrive::getWheelSpeeds,
+            new PIDController(DriveConstants.kPDriveVel, 0, 0),
+            new PIDController(DriveConstants.kPDriveVel, 0, 0),
+            // RamseteCommand passes volts to the callback
+            m_robotDrive::tankDriveVolts,
+            m_robotDrive);
+
+    Reset odometry to the initial pose of the trajectory, run path following
+    command, then stop at the end.
+    return Commands.runOnce(() -> m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose()))
+        .andThen(ramseteCommand)
+        .andThen(Commands.runOnce(() -> m_robotDrive.tankDriveVolts(0, 0)));
+        
+    }*/
 
     public Command twoNoteAuto() {
         return new InstantCommand(() -> {timer.restart();})
