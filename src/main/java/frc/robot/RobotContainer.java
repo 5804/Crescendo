@@ -109,6 +109,10 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
+        NamedCommands.registerCommand("transform", transform());
+        NamedCommands.registerCommand("intake", smartIntake());
+        NamedCommands.registerCommand("shoot", new InstantCommand( () -> {shooterSubsystem.shoot(1);}));
+
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
 
@@ -146,14 +150,11 @@ public class RobotContainer {
             );
         SmartDashboard.putData("Auto choices", chooser);
         chooser.addOption("Event Marker Test",
-            new PathPlannerAuto("eventMarkerTest"));
-        chooser.addOption("Event Marker Return",
-            new PathPlannerAuto("eventMarkerReturn"));
+            new PathPlannerAuto("eventMarkerAuto"));
+        // chooser.addOption("Event Marker Return",
+        //     new PathPlannerAuto("eventMarkerAuto"));
 
-        NamedCommands.registerCommand("transform", transform());
-        NamedCommands.registerCommand("intake", smartIntake());
-        NamedCommands.registerCommand("shoot", shooterSubsystem.setShooterSpeed(1));
-
+        
     }
 
     /**

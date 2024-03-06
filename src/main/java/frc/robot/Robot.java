@@ -64,8 +64,8 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
         LEDSubsystem.Off();
-        LEDSubsystem.SetAnimationFire();
-        LEDSubsystem.Fire();
+        // LEDSubsystem.SetAnimationFire();
+        // LEDSubsystem.Fire();
   }
 
   @Override

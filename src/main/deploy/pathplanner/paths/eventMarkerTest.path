@@ -36,26 +36,20 @@
         "y": 7.0
       },
       "prevControl": {
-        "x": 3.0500092429985077,
-        "y": 6.9990386392884325
+        "x": 3.0500000000000003,
+        "y": 7.0
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 1.05,
-      "rotationDegrees": 0,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "intakeANote",
-      "waypointRelativePos": 1.0,
+      "name": "shoot",
+      "waypointRelativePos": 0.4,
       "command": {
         "type": "sequential",
         "data": {
@@ -63,13 +57,7 @@
             {
               "type": "named",
               "data": {
-                "name": "transform"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "intake"
+                "name": "shoot"
               }
             }
           ]
@@ -78,8 +66,8 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 1.0,
+    "maxAcceleration": 1.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
@@ -91,8 +79,8 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 60.0,
+    "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
