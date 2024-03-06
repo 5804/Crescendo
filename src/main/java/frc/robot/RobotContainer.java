@@ -3,6 +3,7 @@ package frc.robot;
 import java.util.List;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -135,6 +136,15 @@ public class RobotContainer {
             .finallyDo(() -> {s_Swerve.zeroHeading();})
             );
         SmartDashboard.putData("Auto choices", chooser);
+        chooser.addOption("Event Marker Test",
+            new PathPlannerAuto("eventMarkerTest"));
+        chooser.addOption("Event Marker Return",
+            new PathPlannerAuto("eventMarkerReturn"));
+
+        NamedCommands.registerCommand("transform", transform());
+        NamedCommands.registerCommand("intake", smartIntake());
+        NamedCommands.registerCommand("shoot", shooterSubsystem.setShooterSpeed(1));
+
     }
 
     /**
