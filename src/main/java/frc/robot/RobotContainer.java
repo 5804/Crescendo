@@ -125,13 +125,22 @@ public class RobotContainer {
         configureButtonBindings();
 
         chooser.setDefaultOption("One Note Auto", oneNoteAuto());
-        chooser.addOption("S trajectory", followTrajectory(sTrajectory));
-        chooser.addOption("left trajectory", followTrajectory(leftTrajectory));
-        chooser.addOption("right trajectory", followTrajectory(rightTrajectory));
-        chooser.addOption("left timing", timingDriveLeftSide());
-        chooser.addOption("right timing", timingDriveRightSide());
+        // chooser.addOption("S trajectory", followTrajectory(sTrajectory));
+        // chooser.addOption("left trajectory", followTrajectory(leftTrajectory));
+        // chooser.addOption("right trajectory", followTrajectory(rightTrajectory));
+        // chooser.addOption("left timing", timingDriveLeftSide());
+        // chooser.addOption("right timing", timingDriveRightSide());
         chooser.addOption("pathFollowingLeft", 
             new PathPlannerAuto("twoNoteAuto")
+            .finallyDo(() -> {s_Swerve.zeroHeading();})
+            );
+        chooser.addOption("One Note and Leave", leftAndLeave());
+        chooser.addOption("straightTest", 
+            new PathPlannerAuto("1mStraightPathAuto")
+            .finallyDo(() -> {s_Swerve.zeroHeading();})
+            );
+        chooser.addOption("ReturnToSpeaker", 
+            new PathPlannerAuto("returnAuto")
             .finallyDo(() -> {s_Swerve.zeroHeading();})
             );
         SmartDashboard.putData("Auto choices", chooser);
@@ -206,7 +215,7 @@ public class RobotContainer {
 
     public Command stowParallel() {
         return new ParallelCommandGroup(shooterSubsystem.deploy(), intakeSubsystem.stow())
-            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
+            .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;}) // 0.05 // WIP
             .andThen(shooterSubsystem.stow());
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
     }
@@ -230,7 +239,7 @@ public class RobotContainer {
             new ParallelCommandGroup(
                 shooterSubsystem.setIndexerSpeed(1),
                 intakeSubsystem.setIntakeSpeed(0.8),
-                new InstantCommand(() -> {shooterSubsystem.setAnglePosition(0.0125);})
+                new InstantCommand(() -> {shooterSubsystem.setAnglePosition(0.0225);}) // 0.0125
                 )
             .until(() -> {return shooterSubsystem.TOF.getRange() < 165;})
             .andThen(new InstantCommand(() -> {shooterSubsystem.load(0);}))
@@ -256,48 +265,48 @@ public class RobotContainer {
     }
 
         // Create config for trajectory
-        TrajectoryConfig config =
-            new TrajectoryConfig(
-                    1,
-                    1)
-                // Add kinematics to ensure max speed is actually obeyed
-                .setKinematics(Constants.Swerve.swerveKinematics);
-                // Apply the voltage constraint
-                // .addConstraint(autoVoltageConstraint);
+        // TrajectoryConfig config =
+        //     new TrajectoryConfig(
+        //             1,
+        //             1)
+        //         // Add kinematics to ensure max speed is actually obeyed
+        //         .setKinematics(Constants.Swerve.swerveKinematics);
+        //         // Apply the voltage constraint
+        //         // .addConstraint(autoVoltageConstraint);
 
-        // An example trajectory to follow. All units in meters.
-        Trajectory sTrajectory =
-            TrajectoryGenerator.generateTrajectory(
-                // Start at the origin facing the +X direction
-                new Pose2d(0, 0, new Rotation2d(0)),
-                // Pass through these two interior waypoints, making an 's' curve path
-                List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-                // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(3, 0, new Rotation2d(0)),
-                // Pass config
-                config);
+        // // An example trajectory to follow. All units in meters.
+        // Trajectory sTrajectory =
+        //     TrajectoryGenerator.generateTrajectory(
+        //         // Start at the origin facing the +X direction
+        //         new Pose2d(0, 0, new Rotation2d(0)),
+        //         // Pass through these two interior waypoints, making an 's' curve path
+        //         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+        //         // End 3 meters straight ahead of where we started, facing forward
+        //         new Pose2d(3, 0, new Rotation2d(0)),
+        //         // Pass config
+        //         config);
 
-        Trajectory leftTrajectory =
-            TrajectoryGenerator.generateTrajectory(
-                // Start at the origin facing the +X direction
-                new Pose2d(1.78, 6.74, new Rotation2d(55)),
-                // Pass through these interior waypoints
-                List.of(new Translation2d(1.9, 6.93)),
-                // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(2.9, 6.98, new Rotation2d(0)),
-                // Pass config
-                config);
+        // Trajectory leftTrajectory =
+        //     TrajectoryGenerator.generateTrajectory(
+        //         // Start at the origin facing the +X direction
+        //         new Pose2d(1.78, 6.74, new Rotation2d(55)),
+        //         // Pass through these interior waypoints
+        //         List.of(new Translation2d(1.9, 6.93)),
+        //         // End 3 meters straight ahead of where we started, facing forward
+        //         new Pose2d(2.9, 6.98, new Rotation2d(0)),
+        //         // Pass config
+        //         config);
 
-        Trajectory rightTrajectory =
-            TrajectoryGenerator.generateTrajectory(
-                // Start at the origin facing the +X direction
-                new Pose2d(0.66, 4.38, new Rotation2d(-52.55)),
-                // Pass through these interior waypoints
-                List.of(new Translation2d(1.37, 3.73)),
-                // End 3 meters straight ahead of where we started, facing forward
-                new Pose2d(2.43, 3.86, new Rotation2d(26.05)),
-                // Pass config
-                config);
+        // Trajectory rightTrajectory =
+        //     TrajectoryGenerator.generateTrajectory(
+        //         // Start at the origin facing the +X direction
+        //         new Pose2d(0.66, 4.38, new Rotation2d(-52.55)),
+        //         // Pass through these interior waypoints
+        //         List.of(new Translation2d(1.37, 3.73)),
+        //         // End 3 meters straight ahead of where we started, facing forward
+        //         new Pose2d(2.43, 3.86, new Rotation2d(26.05)),
+        //         // Pass config
+        //         config);
 
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -311,24 +320,24 @@ public class RobotContainer {
         return chooser.getSelected();
     }
 
-    public Command followTrajectory(Trajectory trajectory) {
-        ProfiledPIDController thetaController = new ProfiledPIDController(15, 0, 0, AutoConstants.kThetaControllerConstraints);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    // public Command followTrajectory(Trajectory trajectory) {
+    //     ProfiledPIDController thetaController = new ProfiledPIDController(15, 0, 0, AutoConstants.kThetaControllerConstraints);
+    //     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-        HolonomicDriveController controller = new HolonomicDriveController(
-                new PIDController(2.75, 0, 0.5), 
-                new PIDController(2.75, 0, 0.5), 
-                thetaController
-            );
+    //     HolonomicDriveController controller = new HolonomicDriveController(
+    //             new PIDController(2.75, 0, 0.5), 
+    //             new PIDController(2.75, 0, 0.5), 
+    //             thetaController
+    //         );
 
-        SwerveControllerCommand swerveControllerCommand =
-            new SwerveControllerCommand(trajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
+    //     SwerveControllerCommand swerveControllerCommand =
+    //         new SwerveControllerCommand(trajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
                 
-        return Commands.runOnce(
-            () -> s_Swerve.setPose(trajectory.getInitialPose()))
-            .andThen(swerveControllerCommand)
-            .andThen(Commands.runOnce(() -> s_Swerve.drive(new Translation2d(0,0), 0, false, false)));
-    }
+    //     return Commands.runOnce(
+    //         () -> s_Swerve.setPose(trajectory.getInitialPose()))
+    //         .andThen(swerveControllerCommand)
+    //         .andThen(Commands.runOnce(() -> s_Swerve.drive(new Translation2d(0,0), 0, false, false)));
+    // }
         
 
     public Command oneNoteAuto() {
@@ -348,19 +357,45 @@ public class RobotContainer {
 
     }
 
-    public Command timingDriveLeftSide() {
+    public Command leftAndLeave() {
         return new InstantCommand(() -> {timer.restart();})
-            .andThen(new RunCommand(()->{s_Swerve.driveLeft();}, s_Swerve))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
             .until(() -> {return timer.get() > 1;})
-            .andThen(new RunCommand(()->{s_Swerve.driveForward();}, s_Swerve))
-            .until(() -> {return timer.get() > 3;});
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return timer.get() > 2;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            .until(() -> {return timer.get() > 4;})
+            .andThen(
+                new ParallelCommandGroup(smartIntake(),
+                new PathPlannerAuto("twoNoteAuto"))
+                )
+            .until(() -> {return timer.get() > 7;})
+            .andThen(new PathPlannerAuto("returnAuto"))
+            .until(() -> {return timer.get() > 10;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .until(() -> {return timer.get() > 11;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return timer.get() > 12;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
     }
 
-    public Command timingDriveRightSide() {
-        return new InstantCommand(() -> {timer.restart();})
-            .andThen(new RunCommand(()->{s_Swerve.driveRight();}, s_Swerve))
-            .until(() -> {return timer.get() > 1;})
-            .andThen(new RunCommand(()->{s_Swerve.driveForward();}, s_Swerve))
-            .until(() -> {return timer.get() > 3;});
-    }
+    // public Command timingDriveLeftSide() {
+    //     return new InstantCommand(() -> {timer.restart();})
+    //         .andThen(new RunCommand(()->{s_Swerve.driveLeft();}, s_Swerve))
+    //         .until(() -> {return timer.get() > 1;})
+    //         .andThen(new RunCommand(()->{s_Swerve.driveForward();}, s_Swerve))
+    //         .until(() -> {return timer.get() > 3;});
+    // }
+
+    // public Command timingDriveRightSide() {
+    //     return new InstantCommand(() -> {timer.restart();})
+    //         .andThen(new RunCommand(()->{s_Swerve.driveRight();}, s_Swerve))
+    //         .until(() -> {return timer.get() > 1;})
+    //         .andThen(new RunCommand(()->{s_Swerve.driveForward();}, s_Swerve))
+    //         .until(() -> {return timer.get() > 3;});
+    // }
 }

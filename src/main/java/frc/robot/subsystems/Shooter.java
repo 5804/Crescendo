@@ -59,7 +59,7 @@ public class Shooter extends SubsystemBase {
 
     var slot0Configs = talonFXConfigs.Slot0;
     slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
-    slot0Configs.kV = 8; // 3
+    slot0Configs.kV = 8; // 3 // 8
     slot0Configs.kP = 35; // 40 // 35
     slot0Configs.kI = 0; // 0
     slot0Configs.kD = 0; // 0
@@ -255,7 +255,7 @@ public class Shooter extends SubsystemBase {
       public Command stow() {
         return runOnce(
             () -> {
-                setAnglePosition(0.0);
+                setAnglePosition(0); // 0
             }
         );
         // .finallyDo(

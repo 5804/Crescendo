@@ -16,28 +16,60 @@
     },
     {
       "anchor": {
-        "x": 4.4960361834856055,
-        "y": 7.034441832747708
+        "x": 2.528154752195015,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 4.435683395401974,
-        "y": 7.2770338479234375
+        "x": 2.278168062836385,
+        "y": 7.0
       },
       "nextControl": {
-        "x": 4.556388971569238,
-        "y": 6.791849817571979
+        "x": 2.7782429105217297,
+        "y": 7.0
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 3.0,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.0
+        "x": 2.686684337832026,
+        "y": 7.0
+      },
+      "nextControl": {
+        "x": 3.313315662167974,
+        "y": 7.0
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.898044014334899,
+        "y": 3.3483355696586177
+      },
+      "prevControl": {
+        "x": 0.8535031598601818,
+        "y": 3.6297673373522104
+      },
+      "nextControl": {
+        "x": 0.9425848688096167,
+        "y": 3.0669038019650285
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.319807995608836,
+        "y": 5.874272929225644
+      },
+      "prevControl": {
+        "x": 3.319807995608836,
+        "y": 5.874272929225644
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,10 +78,21 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "shoot",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": []
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 1.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
