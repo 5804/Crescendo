@@ -148,13 +148,18 @@ public class RobotContainer {
             new PathPlannerAuto("returnAuto")
             .finallyDo(() -> {s_Swerve.zeroHeading();})
             );
-        SmartDashboard.putData("Auto choices", chooser);
+        chooser.addOption("Turn Test",
+            new PathPlannerAuto("rotateAuto"));
+
         chooser.addOption("Event Marker Test",
             new PathPlannerAuto("eventMarkerAuto"));
         // chooser.addOption("Event Marker Return",
         //     new PathPlannerAuto("eventMarkerAuto"));
-
+        chooser.addOption("TestTwoNoteAuto", twoNotePathFollow());
         
+        chooser.addOption("TestTwoNoteAuto2", twoNotePathFollow2());
+        SmartDashboard.putData("Auto choices", chooser);
+
     }
 
     /**
@@ -185,7 +190,7 @@ public class RobotContainer {
         
         driver.rightTrigger(0.5).whileTrue(
             shooterSubsystem.setShooterSpeed(1)
-            .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 100;})
+            // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 95;})
             .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setRainbowCommand()))
             .finallyDo(() -> {
                 shooterSubsystem.load(0);
@@ -202,11 +207,13 @@ public class RobotContainer {
         driver.rightBumper().whileTrue(smartClimb());
         driver.rightBumper().onTrue(LEDSubsystem.setRainbowCommand());
 
+        driver.back().onTrue(shooterSubsystem.shootFromNotePosition());
+
     }
 
     public Command transform() {
         return shooterSubsystem.deploy()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;}) //0.25
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.125;}) //0.13
             .andThen(intakeSubsystem.deploy())
             .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.33;})
             .andThen(shooterSubsystem.stow())
@@ -215,9 +222,10 @@ public class RobotContainer {
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;});
     }
 
+    // Deprecated
     public Command stow() {
         return shooterSubsystem.deploy()
-            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;})
+            .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.13;}) 
             // .andThen(new ParallelCommandGroup())
             .andThen(intakeSubsystem.stow())
             .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.05;})
@@ -392,6 +400,68 @@ public class RobotContainer {
             .until(() -> {return timer.get() > 12;})
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
+    }
+
+    public Command twoNotePathFollow() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            // .until(() -> {return timer.get() > 2;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            // .until(() -> {return timer.get() > 4;})
+            .andThen(
+                new PathPlannerAuto("twoNoteAutoPathFollow")
+                )
+            // STOP MOVING
+            .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+            // .until(() -> {return timer.get() > 10;})
+            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+            // .until(() -> {return timer.get() > 10;})
+            // .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 11;})
+            // .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            // .until(() -> {return timer.get() > 12;})
+            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
+    }
+
+    public Command twoNotePathFollow2() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            // .until(() -> {return timer.get() > 2;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            // .until(() -> {return timer.get() > 4;})
+            .andThen(
+                new PathPlannerAuto("twoNoteAutoPathFollow2")
+                )
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return timer.get() > 10;})
+            // STOP MOVING
+            .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+            // .until(() -> {return timer.get() > 10;})
+            // .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 11;})
+            // .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            // .until(() -> {return timer.get() > 12;})
+            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
 
     }
 

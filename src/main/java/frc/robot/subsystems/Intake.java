@@ -60,7 +60,7 @@ public class Intake extends SubsystemBase {
         var slot0Configs = talonFXConfigs.Slot0;
         slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
         slot0Configs.kV = 7; // 7 // Arm 1: 7 //
-        slot0Configs.kP = 70; // 50 // 70 // Arm 1: 70 //
+        slot0Configs.kP = 80; // 50 // 70 // Arm 1: 70 //
         slot0Configs.kI = 0; // 0 // Arm 1: 0 //
         slot0Configs.kD = 2; // 3.375 // 2 // Arm 1: 2 //
         slot0Configs.kS = 0; // 0 // Arm 1: 0 //

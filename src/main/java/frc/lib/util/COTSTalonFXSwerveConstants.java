@@ -54,7 +54,7 @@ public class COTSTalonFXSwerveConstants {
             
             /** West Coast Products - SwerveX Standard (Kraken X60)*/
             public static final COTSTalonFXSwerveConstants KrakenX60(double driveGearRatio){
-                double wheelDiameter = Units.inchesToMeters(4.0);
+                double wheelDiameter = Units.inchesToMeters(3.6);
         
                 /** (396 / 35) : 1 */
                 double angleGearRatio = ((396.0 / 35.0) / 1.0);
@@ -120,7 +120,7 @@ public class COTSTalonFXSwerveConstants {
             
             /** West Coast Products - SwerveX Flipped (Kraken X60)*/
             public static final COTSTalonFXSwerveConstants KrakenX60(double driveGearRatio){
-                double wheelDiameter = Units.inchesToMeters(4.0);
+                double wheelDiameter = Units.inchesToMeters(3.6);
         
                 /** (468 / 35) : 1 */
                 double angleGearRatio = ((468.0 / 35.0) / 1.0);
@@ -189,7 +189,7 @@ public class COTSTalonFXSwerveConstants {
             
             /** Swerve Drive Specialties - MK3 Module (Kraken X60)*/
             public static final COTSTalonFXSwerveConstants KrakenX60(double driveGearRatio){
-                double wheelDiameter = Units.inchesToMeters(4.0);
+                double wheelDiameter = Units.inchesToMeters(3.6);
         
                 /** 12.8 : 1 */
                 double angleGearRatio = (12.8 / 1.0);
@@ -233,7 +233,7 @@ public class COTSTalonFXSwerveConstants {
 
             /** Swerve Drive Specialties - MK4 Module (Kraken X60)*/
             public static final COTSTalonFXSwerveConstants KrakenX60(double driveGearRatio){
-                double wheelDiameter = Units.inchesToMeters(4.0);
+                double wheelDiameter = Units.inchesToMeters(3.6);
         
                 /** 12.8 : 1 */
                 double angleGearRatio = (12.8 / 1.0);
@@ -280,15 +280,16 @@ public class COTSTalonFXSwerveConstants {
             }
 
             /** Swerve Drive Specialties - MK4i Module (Kraken X60)*/
+            // WHEEL DIAMETER
             public static final COTSTalonFXSwerveConstants KrakenX60(double driveGearRatio){
-                double wheelDiameter = Units.inchesToMeters(4.0);
+                double wheelDiameter = Units.inchesToMeters(3.7);
         
                 /** (150 / 7) : 1 */
                 double angleGearRatio = ((150.0 / 7.0) / 1.0);
         
-                double angleKP = 50; //12.5
+                double angleKP = 15; //12.5
                 double angleKI = 0.0;
-                double angleKD = 0.0;
+                double angleKD = 0.1;
         
                 InvertedValue driveMotorInvert = InvertedValue.CounterClockwise_Positive;
                 InvertedValue angleMotorInvert = InvertedValue.Clockwise_Positive;

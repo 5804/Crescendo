@@ -60,7 +60,7 @@ public class Shooter extends SubsystemBase {
     var slot0Configs = talonFXConfigs.Slot0;
     slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
     slot0Configs.kV = 8; // 3 // 8
-    slot0Configs.kP = 35; // 40 // 35
+    slot0Configs.kP = 45; // 40 // 35
     slot0Configs.kI = 0; // 0
     slot0Configs.kD = 0; // 0
     slot0Configs.kS = 0; // 0
@@ -136,11 +136,13 @@ public class Shooter extends SubsystemBase {
         .withName("SetShooterSpeed");
   }
 
+  // SHANE PLAY WITH THIS NUMBER TOO
   public Command setShooterSpeed(double shooterSpeed) {
     return run(
             () -> {
                 shoot(shooterSpeed);
             })
+        .until(() -> { return rightShooterMotor.getVelocity().getValue() > 0.97;})
         .withName("SetShooterSpeed RUN");
   }
 
@@ -265,6 +267,15 @@ public class Shooter extends SubsystemBase {
         // );
       }
 
+      // SHANE CHANGE THIS VALUE
+      public Command shootFromNotePosition() {
+        return runOnce(
+            () -> {
+                setAnglePosition(0.02); // 0
+            }
+        );
+      }
+
       public Command climb() {
         return run(
             () -> {
@@ -291,7 +302,7 @@ public class Shooter extends SubsystemBase {
       public Command deploy() {
         return run(
             () -> {
-                setAnglePosition(0.14);
+                setAnglePosition(0.135); // 0.14
             }
         );
         // .finallyDo(
@@ -342,10 +353,10 @@ public class Shooter extends SubsystemBase {
     Rotation2d rotations = Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValue());
     Rotation2d motorRotations = Rotation2d.fromRotations(leftShooterAngleMotor.getPosition().getValue());
     SmartDashboard.putNumber("ShooterAngle", rotations.getDegrees());
-    double motorVelocity = leftShooterAngleMotor.getVelocity().getValue();
+    // double motorVelocity = rightShooterAngleMotor.getVelocity().getValue();
     SmartDashboard.putNumber("ShooterIntakeAngle", rotations.getDegrees());
     SmartDashboard.putNumber("ShooterIntakeAngleEncoder", motorRotations.getDegrees());
-    SmartDashboard.putNumber("ShooterMotorVelocity", motorVelocity);
+    SmartDashboard.putNumber("ShooterMotorVelocity", rightShooterAngleMotor.getVelocity().getValue());
     SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
     SmartDashboard.putNumber("RatchetPosition", rotations.getDegrees());
   }
