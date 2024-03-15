@@ -142,7 +142,7 @@ public class Shooter extends SubsystemBase {
             () -> {
                 shoot(shooterSpeed);
             })
-        .until(() -> { return rightShooterMotor.getVelocity().getValue() > 0.97;})
+        .until(() -> { return rightShooterMotor.getVelocity().getValue() > 25;}) //.97
         .withName("SetShooterSpeed RUN");
   }
 
@@ -216,11 +216,31 @@ public class Shooter extends SubsystemBase {
     leftShooterAngleMotor.set(angleSpeed);
   }
 
-  double currentPosition = 0;
+  public double currentPosition = 0;
   public void setAnglePosition(double anglePosition) {
+        currentPosition = anglePosition;
+
         MotionMagicVoltage request = new MotionMagicVoltage(0);
         leftShooterAngleMotor.setControl(request.withPosition(anglePosition));
       }
+
+  public Command increaseShooterPos() {
+    return run(
+      () -> {
+        setAnglePosition(currentPosition + 0.001);
+      }
+    // ).finallyDo(() -> {setAnglePosition(currentPosition);}
+    );
+  }
+
+  public Command decreaseShooterPos() {
+    return run(
+      () -> {
+        setAnglePosition(currentPosition - 0.001);
+      }
+    // ).finallyDo(() -> {setAnglePosition(currentPosition);}
+    );
+  }
 
   public void activateRatchet() {
     ratchet.setPosition(1);
@@ -269,11 +289,27 @@ public class Shooter extends SubsystemBase {
 
       // SHANE CHANGE THIS VALUE
       public Command shootFromNotePosition() {
-        return runOnce(
+        return run(
             () -> {
-                setAnglePosition(0.02); // 0
+                setAnglePosition(.035); // 0.050
             }
-        );
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
+      }
+
+      public Command autoLastNotePosition() {
+        return run(
+            () -> {
+                setAnglePosition(.05); // 0
+            }
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.046;});
+      }
+
+      public Command autoThirdNotePosition() {
+        return run(
+            () -> {
+                setAnglePosition(.045); // .043
+            }
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.043;});
       }
 
       public Command climb() {

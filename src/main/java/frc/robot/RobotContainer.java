@@ -111,7 +111,15 @@ public class RobotContainer {
     public RobotContainer() {
         NamedCommands.registerCommand("transform", transform());
         NamedCommands.registerCommand("intake", smartIntake());
-        NamedCommands.registerCommand("shoot", new InstantCommand( () -> {shooterSubsystem.shoot(1);}));
+        NamedCommands.registerCommand("shoot", smartShoot());
+        // NamedCommands.registerCommand("intake2", smartIntake2());
+        NamedCommands.registerCommand("thirdNoteShoot", smartShootThirdNote());
+        NamedCommands.registerCommand("lastNoteShoot", smartShootLastNote());
+        NamedCommands.registerCommand("positionShooter", shooterSubsystem.shootFromNotePosition());
+        NamedCommands.registerCommand("shootNote", autoShooter());
+        NamedCommands.registerCommand("indexNote", autoIndexer());
+        NamedCommands.registerCommand("stopShooter", stopShooter());
+        NamedCommands.registerCommand("stopIndexer", stopIndexer());
 
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
@@ -129,35 +137,50 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
 
-        chooser.setDefaultOption("One Note Auto", oneNoteAuto());
-        // chooser.addOption("S trajectory", followTrajectory(sTrajectory));
+        // chooser.setDefaultOption("One Note Auto", oneNoteAuto());
+        chooser.addOption("rotate 90 degrees", followTrajectory(sTrajectory));
         // chooser.addOption("left trajectory", followTrajectory(leftTrajectory));
         // chooser.addOption("right trajectory", followTrajectory(rightTrajectory));
         // chooser.addOption("left timing", timingDriveLeftSide());
         // chooser.addOption("right timing", timingDriveRightSide());
-        chooser.addOption("pathFollowingLeft", 
-            new PathPlannerAuto("twoNoteAuto")
-            .finallyDo(() -> {s_Swerve.zeroHeading();})
-            );
-        chooser.addOption("One Note and Leave", leftAndLeave());
-        chooser.addOption("straightTest", 
-            new PathPlannerAuto("1mStraightPathAuto")
-            .finallyDo(() -> {s_Swerve.zeroHeading();})
-            );
-        chooser.addOption("ReturnToSpeaker", 
-            new PathPlannerAuto("returnAuto")
-            .finallyDo(() -> {s_Swerve.zeroHeading();})
-            );
+        // chooser.addOption("pathFollowingLeft", 
+        //     new PathPlannerAuto("twoNoteAuto")
+        //     .finallyDo(() -> {s_Swerve.zeroHeading();})
+        //     );
+        // chooser.addOption("One Note and Leave", leftAndLeave());
+        // chooser.addOption("straightTest", 
+        //     new PathPlannerAuto("1mStraightPathAuto")
+        //     .finallyDo(() -> {s_Swerve.zeroHeading();})
+        //     );
+        // chooser.addOption("ReturnToSpeaker", 
+        //     new PathPlannerAuto("returnAuto")
+        //     .finallyDo(() -> {s_Swerve.zeroHeading();})
+        //     );
         chooser.addOption("Turn Test",
             new PathPlannerAuto("rotateAuto"));
 
-        chooser.addOption("Event Marker Test",
-            new PathPlannerAuto("eventMarkerAuto"));
-        // chooser.addOption("Event Marker Return",
+        // chooser.addOption("Event Marker Test",
         //     new PathPlannerAuto("eventMarkerAuto"));
-        chooser.addOption("TestTwoNoteAuto", twoNotePathFollow());
+        // // chooser.addOption("Event Marker Return",
+        // //     new PathPlannerAuto("eventMarkerAuto"));
+        // chooser.addOption("TestTwoNoteAuto", twoNotePathFollow());
         
-        chooser.addOption("TestTwoNoteAuto2", twoNotePathFollow2());
+        // chooser.addOption("TestTwoNoteAuto2", twoNotePathFollow2());
+        // chooser.addOption("Out and No Return", noReturn());
+        // chooser.addOption("Out and No Return 2", noReturn2());
+        chooser.addOption("3 Piece Auto", noReturn()
+            .finallyDo(() -> {s_Swerve.zeroHeading();})
+            );
+        chooser.addOption("4 Piece Auto", shoot4Auto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+        chooser.addOption("DO NOT USE YET", midfieldAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+        chooser.addOption("Try This If You're Bored", midfield()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+
         SmartDashboard.putData("Auto choices", chooser);
 
     }
@@ -200,15 +223,17 @@ public class RobotContainer {
             
         driver.leftTrigger(.2).whileTrue(smartIntake());
         // controller.rightTrigger(.5).whileTrue(shooterSubsystem.setIndexerSpeed(.8));
-        // controller.leftTrigger(.5).whileTrue( smartIntake());\
+        // controller.leftTrigger(.5).whileTrue( smartIntake());
 
-        driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
+        // driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
         driver.leftBumper().onTrue(LEDSubsystem.setOrangeCommand());
         driver.rightBumper().whileTrue(smartClimb());
         driver.rightBumper().onTrue(LEDSubsystem.setRainbowCommand());
 
         driver.back().onTrue(shooterSubsystem.shootFromNotePosition());
 
+        driver.povUp().whileTrue(shooterSubsystem.increaseShooterPos());
+        driver.povDown().whileTrue(shooterSubsystem.decreaseShooterPos());
     }
 
     public Command transform() {
@@ -277,34 +302,108 @@ public class RobotContainer {
                     LEDSubsystem.GreenFlow();
                 }
             });
+        }
+    
+    public Command smartIntake2() {
+        return  
+            new ParallelCommandGroup(
+                shooterSubsystem.setIndexerSpeed(1),
+                intakeSubsystem.setIntakeSpeed(0.8),
+                new InstantCommand(() -> {shooterSubsystem.setAnglePosition(0.0225);}) // 0.0125
+                )
+            .until(() -> {return shooterSubsystem.TOF.getRange() < 165;})
+            .andThen(new InstantCommand(() -> {shooterSubsystem.load(0);}))
+            .andThen(new InstantCommand(() -> {intakeSubsystem.load(0);}))
+            .finallyDo(() -> {indexWithTOF();});
+        }
+
+    public Command autoShooter() {
+            return 
+            shooterSubsystem.setShooterSpeed(1);
+        }
+
+    public Command autoIndexer() {
+            return
+            shooterSubsystem.setIndexerSpeed(0.8)
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;});
+    }
+
+    public Command stopShooter() {
+            return
+            shooterSubsystem.setShooterSpeedCommand(0.0);
+    }        
+
+    public Command stopIndexer() {
+            return
+            shooterSubsystem.setIndexerSpeedCommand(0.0);
+    }
+
+    public Command smartShoot() {
+            return 
+            // new InstantCommand(() -> {timer.restart();})
+            (shooterSubsystem.shootFromNotePosition())
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.049;})
+            // .until(() -> {return timer.get() > 0.1;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+        }
+
+        public Command smartShootThirdNote() {
+            return // new InstantCommand(() -> {timer.restart();})
+            (shooterSubsystem.autoThirdNotePosition())
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.049;})
+            // .until(() -> {return timer.get() > 0.1;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+        }
+
+        public Command smartShootLastNote() {
+            return // new InstantCommand(() -> {timer.restart();})
+            (shooterSubsystem.autoLastNotePosition())
+            // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.049;})
+            // .until(() -> {return timer.get() > 0.1;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+        }
+
+
             // .andThen(shooterSubsystem.setIndexerSpeed(-0.05))
             // .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
             // .andThen(shooterSubsystem.setIndexerSpeed(0))
             // .andThen(shooterSubsystem.setIndexerSpeed(0))
             // .andThen(intakeSubsystem.setIntakeSpeed(0))
-    }
+    
 
         // Create config for trajectory
-        // TrajectoryConfig config =
-        //     new TrajectoryConfig(
-        //             1,
-        //             1)
-        //         // Add kinematics to ensure max speed is actually obeyed
-        //         .setKinematics(Constants.Swerve.swerveKinematics);
-        //         // Apply the voltage constraint
-        //         // .addConstraint(autoVoltageConstraint);
+        TrajectoryConfig config =
+            new TrajectoryConfig(
+                    3,
+                    2)
+                // Add kinematics to ensure max speed is actually obeyed
+                .setKinematics(Constants.Swerve.swerveKinematics);
+                // Apply the voltage constraint
+                // .addConstraint(autoVoltageConstraint);
 
-        // // An example trajectory to follow. All units in meters.
-        // Trajectory sTrajectory =
-        //     TrajectoryGenerator.generateTrajectory(
-        //         // Start at the origin facing the +X direction
-        //         new Pose2d(0, 0, new Rotation2d(0)),
-        //         // Pass through these two interior waypoints, making an 's' curve path
-        //         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-        //         // End 3 meters straight ahead of where we started, facing forward
-        //         new Pose2d(3, 0, new Rotation2d(0)),
-        //         // Pass config
-        //         config);
+        // An example trajectory to follow. All units in meters.
+        Trajectory sTrajectory =
+            TrajectoryGenerator.generateTrajectory(
+                // Start at the origin facing the +X direction
+                new Pose2d(0, 0, new Rotation2d(0)),
+                // Pass through these two interior waypoints, making an 's' curve path
+                List.of(new Translation2d(0.1, 0)),
+                // End 3 meters straight ahead of where we started, facing forward
+                new Pose2d(0, 0, new Rotation2d(90)),
+                // Pass config
+                config);
 
         // Trajectory leftTrajectory =
         //     TrajectoryGenerator.generateTrajectory(
@@ -340,24 +439,24 @@ public class RobotContainer {
         return chooser.getSelected();
     }
 
-    // public Command followTrajectory(Trajectory trajectory) {
-    //     ProfiledPIDController thetaController = new ProfiledPIDController(15, 0, 0, AutoConstants.kThetaControllerConstraints);
-    //     thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    public Command followTrajectory(Trajectory trajectory) {
+        ProfiledPIDController thetaController = new ProfiledPIDController(15, 0, 0, AutoConstants.kThetaControllerConstraints);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    //     HolonomicDriveController controller = new HolonomicDriveController(
-    //             new PIDController(2.75, 0, 0.5), 
-    //             new PIDController(2.75, 0, 0.5), 
-    //             thetaController
-    //         );
+        HolonomicDriveController controller = new HolonomicDriveController(
+                new PIDController(1.125, 0, 0.1), 
+                new PIDController(1.125, 0, 0.1), 
+                thetaController
+            );
 
-    //     SwerveControllerCommand swerveControllerCommand =
-    //         new SwerveControllerCommand(trajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
+        SwerveControllerCommand swerveControllerCommand =
+            new SwerveControllerCommand(trajectory, s_Swerve::getPose, Constants.Swerve.swerveKinematics, controller, s_Swerve::setModuleStates, s_Swerve);
                 
-    //     return Commands.runOnce(
-    //         () -> s_Swerve.setPose(trajectory.getInitialPose()))
-    //         .andThen(swerveControllerCommand)
-    //         .andThen(Commands.runOnce(() -> s_Swerve.drive(new Translation2d(0,0), 0, false, false)));
-    // }
+        return Commands.runOnce(
+            () -> s_Swerve.setPose(trajectory.getInitialPose()))
+            .andThen(swerveControllerCommand)
+            .andThen(Commands.runOnce(() -> s_Swerve.drive(new Translation2d(0,0), 0, false, false)));
+    }
         
 
     public Command oneNoteAuto() {
@@ -464,6 +563,122 @@ public class RobotContainer {
             // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
 
     }
+
+    public Command noReturn() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            // .until(() -> {return timer.get() > 2;})
+            // .andThen(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            // .until(() -> {return timer.get() > 0.1;})
+            // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() < 0.01;})
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("3NoteCloseAuto"))
+            // .andThen(smartIntake())
+            .andThen(shooterSubsystem.shootFromNotePosition())
+            // .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.045;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            
+            // STOP MOVING
+            .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
+    }
+
+    public Command shoot4Auto() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            // .until(() -> {return timer.get() > 2;})
+            // .andThen(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            // .until(() -> {return timer.get() > 0.1;})
+            // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() < 0.01;})
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("4NoteCloseAuto"))
+            // .andThen(smartIntake())
+            .andThen(shooterSubsystem.autoLastNotePosition())
+            // .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.045;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            
+            // STOP MOVING
+            .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
+    }
+
+    public Command midfieldAuto() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            // .until(() -> {return timer.get() > 2;})
+            // .andThen(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            // .until(() -> {return timer.get() > 0.1;})
+            // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() < 0.01;})
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("4NoteMidLoadSideAuto"))
+            // .andThen(smartIntake())
+            .andThen(shooterSubsystem.autoLastNotePosition())
+            // .until(() -> {return intakeSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.045;})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            
+            // STOP MOVING
+            .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
+    }
+
+    public Command midfield() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            // .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            // .until(() -> {return timer.get() > 2;})
+            // .andThen(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            // .until(() -> {return timer.get() > 0.1;})
+            // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() < 0.01;})
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("midfield1Auto"))
+            .andThen(shooterSubsystem.autoLastNotePosition())
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .andThen(new PathPlannerAuto("midfield2Auto"))
+            .andThen(shooterSubsystem.autoLastNotePosition())
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .andThen(new PathPlannerAuto("midfield3Auto"))
+            .andThen(shooterSubsystem.autoLastNotePosition())
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            
+            // STOP MOVING
+            .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+
+    }
+
+
 
     // public Command timingDriveLeftSide() {
     //     return new InstantCommand(() -> {timer.restart();})

@@ -289,7 +289,7 @@ public class COTSTalonFXSwerveConstants {
         
                 double angleKP = 15; //12.5
                 double angleKI = 0.0;
-                double angleKD = 0.1;
+                double angleKD = 0.125;
         
                 InvertedValue driveMotorInvert = InvertedValue.CounterClockwise_Positive;
                 InvertedValue angleMotorInvert = InvertedValue.Clockwise_Positive;
