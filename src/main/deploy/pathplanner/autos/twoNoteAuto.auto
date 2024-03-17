@@ -2,26 +2,19 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.68,
-      "y": 6.74
+      "x": 0.6,
+      "y": 6.52
     },
-    "rotation": 55.0
+    "rotation": 60.0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "sequential",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "leftTrajectory"
-                }
-              }
-            ]
+            "pathName": "Copy of twoNotePath"
           }
         }
       ]

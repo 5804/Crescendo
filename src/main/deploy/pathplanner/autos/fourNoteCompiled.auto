@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.15,
+      "y": 5.55
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "transform"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "fourNote1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "fourNote2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "fourNote3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "lastNoteShoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

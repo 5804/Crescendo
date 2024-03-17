@@ -196,6 +196,17 @@ public class Shooter extends SubsystemBase {
     );
   }
 
+  public Command indexDefaultCommand(double indexerSpeed) {
+    return run(
+      () -> {
+        if (TOF.getRange() > 165) {
+        load(indexerSpeed);
+        }
+      }
+    ).finallyDo(() -> {load(0);}
+    );
+  }
+
   public Command setIndexerSpeedNoFinallyDo(double indexerSpeed) {
     return run(
       () -> {
@@ -299,17 +310,17 @@ public class Shooter extends SubsystemBase {
       public Command autoLastNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.05); // 0
+                setAnglePosition(.051); // .05
             }
-        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.046;});
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.049;});
       }
 
       public Command autoThirdNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.045); // .043
+                setAnglePosition(.042); // .043
             }
-        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.043;});
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.040;});
       }
 
       public Command climb() {
@@ -318,6 +329,14 @@ public class Shooter extends SubsystemBase {
               MotionMagicVoltage request = new MotionMagicVoltage(0);
               request.withSlot(1);
               setAnglePosition(0.0);
+            }
+        );
+      }
+
+      public Command climbPosition() {
+        return run(
+            () -> {
+                setAnglePosition(0.32); // Change this later
             }
         );
       }
