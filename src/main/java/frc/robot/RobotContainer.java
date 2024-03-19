@@ -21,10 +21,13 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -78,9 +81,11 @@ public class RobotContainer {
     Trigger bbStickF = new Trigger(() -> buttonBoard.getRawAxis(1) > 0.7);
     Trigger bbStickB = new Trigger(() -> buttonBoard.getRawAxis(1) < -0.7);
 
+    private ShuffleboardTab tab = Shuffleboard.getTab("Tab1");
+
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
-    private final Shooter shooterSubsystem = new Shooter();
+    public final Shooter shooterSubsystem = new Shooter();
     private final Intake intakeSubsystem = new Intake();
     private final LED LEDSubsystem = new LED();
 
@@ -123,7 +128,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("stopIndexer", stopIndexer());
 
         NamedCommands.registerCommand("index", indexWithTOF());
-
+        NamedCommands.registerCommand("stow", stowParallel());
+        NamedCommands.registerCommand("secondNoteShoot", smartSecondNoteShoot());
+        
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
 
@@ -146,8 +153,8 @@ public class RobotContainer {
 
         chooser.setDefaultOption("One Note Auto", oneNoteAuto());
 
-        // chooser.addOption("Turn Test",
-        //     new PathPlannerAuto("rotateAuto"));
+        chooser.addOption("1m Straight",
+             new PathPlannerAuto("1mStraightPathAuto"));
 
         chooser.addOption("2 Piece Auto Test", twoNoteAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -159,9 +166,12 @@ public class RobotContainer {
         chooser.addOption("4 Piece Auto", fourNoteAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
-        // chooser.addOption("4 Piece Auto Test", newFourPieceAuto()
-        // .finallyDo(() -> {s_Swerve.zeroHeading();})
-        // );
+        chooser.addOption("Midfield Auto", rightMidfieldAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+        chooser.addOption("NEW 4 Piece Auto", newFourPieceAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
         // chooser.addOption("DO NOT USE YET", midfieldAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // // );
@@ -173,6 +183,7 @@ public class RobotContainer {
         // );
 
         SmartDashboard.putData("Auto choices", chooser);
+        tab.add("Auto Chooser", chooser);
     }
 
     /**
@@ -204,8 +215,7 @@ public class RobotContainer {
             
         driver.leftTrigger(.2).whileTrue(smartIntake());
 
-        // driver.leftBumper().whileTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
-        // driver.leftBumper().onTrue(shooterSubsystem.activateRatchet());
+        driver.leftBumper().onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
         driver.rightBumper().whileTrue(smartClimb());
         driver.rightBumper().onTrue(LEDSubsystem.setRainbowCommand());
 
@@ -216,6 +226,7 @@ public class RobotContainer {
 
         b1.onTrue(shooterSubsystem.climbPosition());
         b5.whileTrue(smartOuttake());
+        b3.onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
 
         // driver.povRight().whileTrue(intakeSubsystem.raiseIntake());
         // driver.povLeft().whileTrue(intakeSubsystem.lowerIntake());
@@ -259,7 +270,7 @@ public class RobotContainer {
     public Command smartClimb() {
            return shooterSubsystem.climb()
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.03;})
-            .finallyDo(() -> {shooterSubsystem.deactivateRatchet();})
+            .finallyDo(() -> {shooterSubsystem.activateRatchet();})
             .withName("Climbing");
     }
 
@@ -339,29 +350,40 @@ public class RobotContainer {
             // indexWithTOF()
             (shooterSubsystem.setShooterSpeed(1))
             .andThen((shooterSubsystem.shootFromNotePosition()))
-            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
-            // .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
-            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
     
     public Command startShoot() {
             return
             shooterSubsystem.setShooterSpeed(1)
-            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
-            // .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
-            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
 
+        public Command smartSecondNoteShoot() {
+            return
+            // indexWithTOF()
+            (shooterSubsystem.setShooterSpeed(1))
+            .andThen((shooterSubsystem.autoSecondNotePosition()))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+        }
+        
         public Command smartShootThirdNote() {
             return
             (shooterSubsystem.setShooterSpeed(1))
             .andThen(shooterSubsystem.autoThirdNotePosition())
-            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
-            // .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
-            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
 
         public Command smartShootLastNote() {
@@ -415,7 +437,7 @@ public class RobotContainer {
             .until(() -> {return timer.get() > 2;})
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
-            .andThen(transform())
+            // .andThen(transform())
             .until(() -> {return timer.get() > 4;});
 
     }
@@ -546,11 +568,23 @@ public class RobotContainer {
         .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
     }
 
+    public Command rightMidfieldAuto() {
+        return new InstantCommand(() -> {timer.restart();})
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .until(() -> {return timer.get() > 1;})
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return timer.get() > 2;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(new PathPlannerAuto("midfieldAuto"))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+    }
+
     public Command newFourPieceAuto() {
-        return new PathPlannerAuto("fourNoteCompiled")
-        .andThen(new InstantCommand(() -> {s_Swerve.drive(new Translation2d(0,0), 0, false, false);}))
-        .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-        .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+        return new PathPlannerAuto("newFourNoteAuto");
     }
 
 }

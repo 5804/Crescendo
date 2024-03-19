@@ -57,18 +57,20 @@ public class Shooter extends SubsystemBase {
     talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
     talonFXConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
 
+    // Regular PIDs
     var slot0Configs = talonFXConfigs.Slot0;
     slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
-    slot0Configs.kV = 8; // 3 // 8
-    slot0Configs.kP = 45; // 40 // 35
+    slot0Configs.kV = 7; // 3 // 8
+    slot0Configs.kP = 45; // 40 // 35 // 45
     slot0Configs.kI = 0; // 0
-    slot0Configs.kD = 0; // 0
+    slot0Configs.kD = 0; // 0 // WIP VALUE
     slot0Configs.kS = 0; // 0
 
+    // Climb PIDs
     var slot1Configs = talonFXConfigs.Slot1;
     slot1Configs.GravityType = GravityTypeValue.Arm_Cosine;
     slot1Configs.kV = 3; // 3
-    slot1Configs.kP = 10; // 40 // 35
+    slot1Configs.kP = 10; // 40 // 35 // 10
     slot1Configs.kI = 0; // 0
     slot1Configs.kD = 0; // 0
     slot1Configs.kS = 0; // 0
@@ -254,36 +256,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public void activateRatchet() {
-    ratchet.setPosition(1);
-  }
-
-  public void deactivateRatchet() {
     ratchet.setPosition(0);
   }
 
-// public Command lowerShooter() {
-//     return run(
-//         () -> {
-//             setAnglePosition(currentPosition -= .1);
-//         }
-//     ).finallyDo(
-//         () -> {
-//             setAngleSpeed(0);
-//         }
-//     );
-// }
-
-// public Command raiseShooter() {
-//     return run(
-//         () -> {
-//             setAnglePosition(currentPosition += .1);
-//         }
-//     ).finallyDo(
-//         () -> {
-//             setAngleSpeed(0);
-//         }
-//     );
-//   }
+  public void deactivateRatchet() {
+    ratchet.setPosition(1);
+  }
 
       public Command stow() {
         return runOnce(
@@ -302,7 +280,7 @@ public class Shooter extends SubsystemBase {
       public Command shootFromNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.035); // 0.050
+                setAnglePosition(.056); // 0.06
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
       }
@@ -310,7 +288,7 @@ public class Shooter extends SubsystemBase {
       public Command autoLastNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.051); // .05
+                setAnglePosition(.062); // .051 // .062
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.049;});
       }
@@ -321,6 +299,14 @@ public class Shooter extends SubsystemBase {
                 setAnglePosition(.042); // .043
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.040;});
+      }
+
+      public Command autoSecondNotePosition() {
+        return run(
+            () -> {
+                setAnglePosition(.058); // .058
+            }
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
       }
 
       public Command climb() {
@@ -415,4 +401,5 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
     SmartDashboard.putNumber("RatchetPosition", rotations.getDegrees());
   }
+
 }
