@@ -280,7 +280,7 @@ public class Shooter extends SubsystemBase {
       public Command shootFromNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.056); // 0.06
+                setAnglePosition(.055); // 0.06
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
       }
@@ -288,9 +288,9 @@ public class Shooter extends SubsystemBase {
       public Command autoLastNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.062); // .051 // .062
+                setAnglePosition(.0598); // .051 // .062
             }
-        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.049;});
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
       }
 
       public Command autoThirdNotePosition() {
@@ -304,7 +304,7 @@ public class Shooter extends SubsystemBase {
       public Command autoSecondNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.058); // .058
+                setAnglePosition(.0578); // .058
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
       }
