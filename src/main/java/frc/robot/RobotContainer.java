@@ -2,6 +2,7 @@ package frc.robot;
 
 import java.util.List;
 
+import com.ctre.phoenix.music.Orchestra;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -84,10 +85,10 @@ public class RobotContainer {
     private ShuffleboardTab tab = Shuffleboard.getTab("Tab1");
 
     /* Subsystems */
-    private final Swerve s_Swerve = new Swerve();
+    public final Swerve s_Swerve = new Swerve();
     public final Shooter shooterSubsystem = new Shooter();
-    private final Intake intakeSubsystem = new Intake();
-    private final LED LEDSubsystem = new LED();
+    public static final Intake intakeSubsystem = new Intake();
+    public final LED LEDSubsystem = new LED();
 
     private final SendableChooser<Command> chooser = new SendableChooser<>();
 
@@ -153,25 +154,27 @@ public class RobotContainer {
 
         chooser.setDefaultOption("One Note Auto", oneNoteAuto());
 
-        chooser.addOption("1m Straight",
-             new PathPlannerAuto("1mStraightPathAuto"));
-
-        chooser.addOption("2 Piece Auto Test", twoNoteAuto()
+        chooser.addOption("NEW 4 Piece Auto", newFourPieceAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
+
+        // chooser.addOption("1m Straight",
+        //      new PathPlannerAuto("1mStraightPathAuto"));
+
+        // chooser.addOption("2 Piece Auto Test", twoNoteAuto()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
 
         // chooser.addOption("3 Piece Auto", threeNoteAuto()
         //     .finallyDo(() -> {s_Swerve.zeroHeading();})
         //     );
-        chooser.addOption("4 Piece Auto", fourNoteAuto()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        );
+        // chooser.addOption("4 Piece Auto", fourNoteAuto()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
         chooser.addOption("Midfield Auto", rightMidfieldAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
-        chooser.addOption("NEW 4 Piece Auto", newFourPieceAuto()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        );
+        
         // chooser.addOption("DO NOT USE YET", midfieldAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // // );

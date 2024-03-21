@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.music.Orchestra;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -27,6 +30,7 @@ public class Robot extends TimedRobot {
 
   private final LED LEDSubsystem = new LED();
 
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -37,6 +41,16 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
     CameraServer.startAutomaticCapture();
+
+    // Orchestra m_orchestra = new Orchestra();
+
+    // m_orchestra.addInstrument(RobotContainer.intakeSubsystem.intakeMotor);
+
+    // var status = m_orchestra.loadMusic("");
+
+    // if (!status.isOK()) {
+    //     m_orchestra.play();
+    // }
 
     // adding port forwarding for limelights
     for (int port = 5800; port <= 5807; port++) {
