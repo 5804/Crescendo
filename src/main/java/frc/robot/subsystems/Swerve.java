@@ -209,9 +209,6 @@ public class Swerve extends SubsystemBase {
 
     // Limelight
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    NetworkTableEntry ty = table.getEntry("ty");
-    double targetOffsetAngle_Vertical = ty.getDouble(0.0);
-
     // how many degrees back is your limelight rotated from perfectly vertical?
     double limelightMountAngleDegrees = 45; 
 
@@ -221,15 +218,27 @@ public class Swerve extends SubsystemBase {
     // distance from the target to the floor
     double goalHeightInches = 80;
 
-    double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
-    double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+    //calculate distance from speaker
+    public double calculateDistanceFromSpeaker() { 
+        NetworkTableEntry ty = table.getEntry("ty");
+        double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+        double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+        double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+        return (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+    }
 
-    //calculate distance
-    double distanceFromLimelightToGoalInches = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
-
+    //calculate angle to speaker
+    public double calculateAngleToSpeaker() { 
+        NetworkTableEntry ty = table.getEntry("ty");
+        double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+        double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+        //double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+        return angleToGoalDegrees;
+    }
 
     @Override
     public void periodic(){
+        //double distanceFromSpeaker = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
         swerveOdometry.update(getGyroYaw(), getModulePositions());
         SmartDashboard.putNumber("Gyro", getGyroYaw().getDegrees());
 
@@ -243,9 +252,9 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Odometry Y", swerveOdometry.getPoseMeters().getY());
         SmartDashboard.putNumber("Angle", swerveOdometry.getPoseMeters().getRotation().getDegrees());
 
-        SmartDashboard.putNumber("ty", ty.getDouble(0.0));
-        SmartDashboard.putNumber("Angle to goal", angleToGoalDegrees);
-        SmartDashboard.putNumber("Distance from AprilTag", distanceFromLimelightToGoalInches);
+        SmartDashboard.putNumber("ty", table.getEntry("ty").getDouble(0.0));
+        SmartDashboard.putNumber("Angle to goal", calculateAngleToSpeaker());
+        SmartDashboard.putNumber("Distance from Speaker", calculateDistanceFromSpeaker());
     }
 
 }
