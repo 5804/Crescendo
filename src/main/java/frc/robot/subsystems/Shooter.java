@@ -296,7 +296,7 @@ public class Shooter extends SubsystemBase {
       public Command autoThirdNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.042); // .043
+                setAnglePosition(.060); // .043
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.040;});
       }

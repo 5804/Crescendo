@@ -154,9 +154,25 @@ public class RobotContainer {
 
         chooser.setDefaultOption("One Note Auto", oneNoteAuto());
 
-        chooser.addOption("NEW 4 Piece Auto", newFourPieceAuto()
+        /*chooser.addOption("NEW 4 Piece Auto", newFourPieceAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        ); */
+
+      /*   chooser.addOption("4 Piece Speaker Auto", altFourPieceAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        ); */
+
+        chooser.addOption("MidSpeaker5NoteAuto", MidSpeaker5NoteAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
+
+        chooser.addOption("MidSpeaker4NoteAuto", MidSpeaker4NoteAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+
+       /*  chooser.addOption("Drive5MetersAuto", Drive5MetersAuto()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        ); */
 
         // chooser.addOption("1m Straight",
         //      new PathPlannerAuto("1mStraightPathAuto"));
@@ -165,15 +181,20 @@ public class RobotContainer {
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // );
 
-        // chooser.addOption("3 Piece Auto", threeNoteAuto()
-        //     .finallyDo(() -> {s_Swerve.zeroHeading();})
-        //     );
+         chooser.addOption("LoadSide3NoteAuto", LoadSide3NoteAuto()
+             .finallyDo(() -> {s_Swerve.zeroHeading();})
+             );
+
         // chooser.addOption("4 Piece Auto", fourNoteAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // );
         chooser.addOption("Midfield Auto", rightMidfieldAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
+
+       /*  chooser.addOption("Quick Test", quickTest()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        ); */
         
         // chooser.addOption("DO NOT USE YET", midfieldAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -586,8 +607,28 @@ public class RobotContainer {
             // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
     }
 
-    public Command newFourPieceAuto() {
+  /*   public Command newFourPieceAuto() {
         return new PathPlannerAuto("newFourNoteAuto");
+    } */
+
+   /*  public Command altFourPieceAuto() {
+        return new PathPlannerAuto("FourNoteSpeakerAuto");
+    } */
+
+    public Command MidSpeaker5NoteAuto() {
+        return new PathPlannerAuto("MidSpeaker5NoteAuto");
+    }
+    
+   /*  public Command quickTest() {
+        return new PathPlannerAuto("quickTest");
+    } */
+
+    public Command MidSpeaker4NoteAuto() {
+        return new PathPlannerAuto("MidSpeaker4NoteAuto");
+    }
+
+    public Command LoadSide3NoteAuto() {
+       return new PathPlannerAuto("LoadSide3NoteAuto");
     }
 
 }

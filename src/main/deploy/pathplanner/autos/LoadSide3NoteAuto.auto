@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.66,
+      "y": 4.44
+    },
+    "rotation": -60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "transform"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LoadSide3Note 1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LoadSide3Note 1.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

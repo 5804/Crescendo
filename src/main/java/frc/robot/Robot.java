@@ -9,7 +9,11 @@ import com.ctre.phoenix.music.Orchestra;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.LED;
@@ -41,6 +45,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
     CameraServer.startAutomaticCapture();
+    CameraServer.getVideo();
 
     // Orchestra m_orchestra = new Orchestra();
 
@@ -56,6 +61,16 @@ public class Robot extends TimedRobot {
     for (int port = 5800; port <= 5807; port++) {
       PortForwarder.add(port, "limelight.local", port);
     }
+
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    NetworkTableEntry tx = table.getEntry("tx");
+    NetworkTableEntry ty = table.getEntry("ty");
+    
+    double x = tx.getDouble(0.0);
+    double y = ty.getDouble(0.0);
+
+    SmartDashboard.putNumber("LimelightX", x);
+    SmartDashboard.putNumber("LimelightY", y);
 
         //LEDSubsystem.SetAnimationFire();
   }
