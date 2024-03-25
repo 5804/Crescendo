@@ -262,7 +262,7 @@ public class Swerve extends SubsystemBase {
     // Limelight
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     // how many degrees back is your limelight rotated from perfectly vertical?
-    double limelightMountAngleDegrees = 45; 
+    double limelightMountAngleDegrees = 31; 
 
     // distance from the center of the Limelight lens to the floor
     double limelightLensHeightInches = 10.25; 

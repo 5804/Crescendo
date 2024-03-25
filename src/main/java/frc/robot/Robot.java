@@ -62,16 +62,6 @@ public class Robot extends TimedRobot {
       PortForwarder.add(port, "limelight.local", port);
     }
 
-    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    NetworkTableEntry tx = table.getEntry("tx");
-    NetworkTableEntry ty = table.getEntry("ty");
-    
-    double x = tx.getDouble(0.0);
-    double y = ty.getDouble(0.0);
-
-    SmartDashboard.putNumber("LimelightX", x);
-    SmartDashboard.putNumber("LimelightY", y);
-
         //LEDSubsystem.SetAnimationFire();
   }
 

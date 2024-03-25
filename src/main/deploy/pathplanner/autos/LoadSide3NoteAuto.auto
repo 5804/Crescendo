@@ -32,7 +32,19 @@
         {
           "type": "path",
           "data": {
+            "pathName": "LoadSide3Note 1.25"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
             "pathName": "LoadSide3Note 1.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LoadSide3Note 1.75"
           }
         },
         {
