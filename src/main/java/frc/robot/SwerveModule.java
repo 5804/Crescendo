@@ -1,8 +1,11 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -10,6 +13,8 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import frc.lib.math.Conversions;
 import frc.lib.util.SwerveModuleConstants;
 
@@ -18,7 +23,7 @@ public class SwerveModule {
     private Rotation2d angleOffset;
 
     private TalonFX mAngleMotor;
-    private TalonFX mDriveMotor;
+    public TalonFX mDriveMotor; // Probably should not be public, but it's probably fine
     private CANcoder angleEncoder;
 
     private final SimpleMotorFeedforward driveFeedForward = new SimpleMotorFeedforward(Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
@@ -53,6 +58,10 @@ public class SwerveModule {
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle); 
         mAngleMotor.setControl(anglePosition.withPosition(desiredState.angle.getRotations()));
         setSpeed(desiredState, isOpenLoop);
+    }
+
+    public void setSpeed(Measure<Voltage> volts) {
+        mDriveMotor.setVoltage(volts.in(Volts));
     }
 
     private void setSpeed(SwerveModuleState desiredState, boolean isOpenLoop){

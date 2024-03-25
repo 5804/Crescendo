@@ -1,12 +1,15 @@
 package frc.robot.subsystems;
 
 import frc.robot.SwerveModule;
+import frc.robot.Constants.Swerve.Mod0;
 import frc.robot.Constants;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix.music.Orchestra;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
@@ -24,14 +27,63 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.units.Voltage;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Velocity;
+
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.Meters;
+
 
 public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveModule[] mSwerveMods;
     public Pigeon2 gyro;
+
+    // Creates a SysIdRoutine
+
+    public void voltageDrive(Measure<Voltage> volts) {
+        for (SwerveModule mod : mSwerveMods) {
+            mod.setSpeed(volts);
+        }
+    }
+
+    public void logMotors() {
+        
+    }
+
+    private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
+
+    private final MutableMeasure<Distance> m_distance = mutable(Meters.of(0));
+
+    private final MutableMeasure<Velocity<Distance>> m_velocity = mutable(MetersPerSecond.of(0));
+
+    SysIdRoutine routine = new SysIdRoutine(
+    new SysIdRoutine.Config(),
+    new SysIdRoutine.Mechanism(this::voltageDrive,
+    log -> {
+        for (SwerveModule mod : mSwerveMods) {
+            double voltage = mod.mDriveMotor.getMotorVoltage().getValueAsDouble();
+        
+        log.motor("frontLeft")
+        .voltage(
+            m_appliedVoltage.mut_replace(
+                voltage * RobotController.getBatteryVoltage(), Volts))
+            .linearPosition(m_distance.mut_replace(mod.getCANcoder().getDistance(), Meters))
+            .linearVelocity(
+                m_velocity.mut_replace(mod.getCANcoder()., MetersPerSecond));
+        }
+    }
+    , this)
+);
 
     public Swerve() {
         gyro = new Pigeon2(Constants.Swerve.pigeonID, "torch");
@@ -213,10 +265,10 @@ public class Swerve extends SubsystemBase {
     double limelightMountAngleDegrees = 45; 
 
     // distance from the center of the Limelight lens to the floor
-    double limelightLensHeightInches = 18.75; 
+    double limelightLensHeightInches = 10.25; 
 
     // distance from the target to the floor
-    double goalHeightInches = 80;
+    double goalHeightInches = 58;
 
     //calculate distance from speaker
     public double calculateDistanceFromSpeaker() { 
