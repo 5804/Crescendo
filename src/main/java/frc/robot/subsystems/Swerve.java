@@ -210,13 +210,13 @@ public class Swerve extends SubsystemBase {
     // Limelight
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     // how many degrees back is your limelight rotated from perfectly vertical?
-    double limelightMountAngleDegrees = 45; 
+    double limelightMountAngleDegrees = 31; 
 
     // distance from the center of the Limelight lens to the floor
-    double limelightLensHeightInches = 18.75; 
+    double limelightLensHeightInches = 16.375; 
 
     // distance from the target to the floor
-    double goalHeightInches = 80;
+    double goalHeightInches = 58;
 
     //calculate distance from speaker
     public double calculateDistanceFromSpeaker() { 

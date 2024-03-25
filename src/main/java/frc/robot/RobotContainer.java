@@ -170,9 +170,9 @@ public class RobotContainer {
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
 
-       /*  chooser.addOption("Drive5MetersAuto", Drive5MetersAuto()
+         chooser.addOption("Drive5MetersAuto", Drive5MetersAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
-        ); */
+        ); 
 
         // chooser.addOption("1m Straight",
         //      new PathPlannerAuto("1mStraightPathAuto"));
@@ -629,6 +629,10 @@ public class RobotContainer {
 
     public Command LoadSide3NoteAuto() {
        return new PathPlannerAuto("LoadSide3NoteAuto");
+    }
+
+    public Command Drive5MetersAuto() {
+       return new PathPlannerAuto("Drive5MetersAuto");
     }
 
 }
