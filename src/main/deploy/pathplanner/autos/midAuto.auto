@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.1477006138269887,
-      "y": 5.55
+      "x": 0.6630730971658731,
+      "y": 4.420390379242297
     },
-    "rotation": 0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -26,7 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "4NoteToSpeaker1"
+            "pathName": "mid1.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "mid1"
           }
         },
         {
@@ -38,49 +44,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "4NoteToSpeaker2"
+            "pathName": "mid2.5"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "helpme"
+            "pathName": "mid2"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "startShoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "4NoteToSpeaker3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "startShoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "speakerToMid"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "MidToSpeakerCopy"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "aimAndShoot"
           }
         }
       ]

@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.Intake;
@@ -86,7 +87,7 @@ public class RobotContainer {
 
     /* Subsystems */
     public final Swerve s_Swerve = new Swerve();
-    public final Shooter shooterSubsystem = new Shooter();
+    public static final Shooter shooterSubsystem = new Shooter();
     public static final Intake intakeSubsystem = new Intake();
     public final LED LEDSubsystem = new LED();
 
@@ -123,14 +124,17 @@ public class RobotContainer {
         NamedCommands.registerCommand("thirdNoteShoot", smartShootThirdNote());
         NamedCommands.registerCommand("lastNoteShoot", smartShootLastNote());
         NamedCommands.registerCommand("positionShooter", shooterSubsystem.shootFromNotePosition());
-        NamedCommands.registerCommand("shootNote", autoShooter());
-        NamedCommands.registerCommand("indexNote", autoIndexer());
-        NamedCommands.registerCommand("stopShooter", stopShooter());
-        NamedCommands.registerCommand("stopIndexer", stopIndexer());
+        // NamedCommands.registerCommand("shootNote", autoShooter());
+        // NamedCommands.registerCommand("indexNote", autoIndexer());
+        // NamedCommands.registerCommand("stopShooter", stopShooter());
+        // NamedCommands.registerCommand("stopIndexer", stopIndexer());
+        NamedCommands.registerCommand("shootWithTOF", shootWithTOF());
 
         NamedCommands.registerCommand("index", indexWithTOF());
         NamedCommands.registerCommand("stow", stowParallel());
         NamedCommands.registerCommand("secondNoteShoot", smartSecondNoteShoot());
+        NamedCommands.registerCommand("limelightAim", limeLightAutoAim());
+        NamedCommands.registerCommand("aimAndShoot", aimAndShoot());
         
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
@@ -188,9 +192,12 @@ public class RobotContainer {
         // chooser.addOption("4 Piece Auto", fourNoteAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // );
-        chooser.addOption("Midfield Auto", rightMidfieldAuto()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        );
+        // chooser.addOption("Midfield Auto", rightMidfieldAuto()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
+
+        chooser.addOption("Mid Auto", midAuto());
+        chooser.addOption("New Mid Auto", newMidAuto());
 
        /*  chooser.addOption("Quick Test", quickTest()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -223,9 +230,18 @@ public class RobotContainer {
         // Stow Shooter and Intake
         driver.a().onTrue(stowParallel());
         
+        driver.b().onTrue(shooterSubsystem.amp());
+
+        driver.y().onTrue(limeLightAutoAim());
+
+        
+        // driver.x().whileTrue(s_Swerve.sysIdQuasistatic(Direction.kForward));
+        // driver.y().whileTrue(s_Swerve.sysIdQuasistatic(Direction.kReverse));
+        // driver.b().whileTrue(s_Swerve.sysIdDynamic(Direction.kReverse));
+        // driver.a().whileTrue(s_Swerve.sysIdDynamic(Direction.kForward));
+
         driver.start().onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
 
-        driver.b().onTrue(shooterSubsystem.amp());
         
         driver.rightTrigger(0.5).whileTrue(
             shooterSubsystem.setShooterSpeed(1)
@@ -379,6 +395,16 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
+
+    public Command shootWithTOF() {
+            return
+            indexWithTOF()
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+        }
     
     public Command startShoot() {
             return
@@ -389,38 +415,71 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
 
-        public Command smartSecondNoteShoot() {
+    public Command aimAndShoot() {
             return
-            // indexWithTOF()
-            (shooterSubsystem.setShooterSpeed(1))
-            .andThen((shooterSubsystem.autoSecondNotePosition()))
-            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
-            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
-            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
-        }
-        
-        public Command smartShootThirdNote() {
-            return
-            (shooterSubsystem.setShooterSpeed(1))
-            .andThen(shooterSubsystem.autoThirdNotePosition())
+            limeLightAutoAim()
+            .andThen(shooterSubsystem.setShooterSpeed(1))
             .andThen(shooterSubsystem.setIndexerSpeed(0.8))
             .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
 
-        public Command smartShootLastNote() {
-            return
-            (shooterSubsystem.setShooterSpeed(1))
-            .andThen(shooterSubsystem.autoLastNotePosition())
-            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
-            // .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
-            // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
-            // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+    public Command smartSecondNoteShoot() {
+        return
+        // indexWithTOF()
+        (shooterSubsystem.setShooterSpeed(1))
+        .andThen((shooterSubsystem.autoSecondNotePosition()))
+        .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+        .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+        .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+        .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+    }
+    
+    public Command smartShootThirdNote() {
+        return
+        (shooterSubsystem.setShooterSpeed(1))
+        .andThen(shooterSubsystem.autoThirdNotePosition())
+        .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+        .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+        .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+        .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+    }
+
+    public Command smartShootLastNote() {
+        return
+        (shooterSubsystem.setShooterSpeed(1))
+        .andThen(shooterSubsystem.autoLastNotePosition())
+        .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+        // .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+        // .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+        // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+    }
+
+
+    // WIP limelight auto aiming DO NOT RUN
+    //  step 1 get angle when at speaker
+    //  step 2 is get angle at furthest shooting distance 
+    //  if we are inbetween these then we can move shooter angle 
+    //  calculate position to set shooter angle 
+    //  if statement inside top conditional don't move shooter below 0 position 
+    //  else set position 
+
+
+
+    public Command limeLightAutoAim() {
+        return (new InstantCommand(() -> {
+        if (s_Swerve.calculateAngleToSpeaker() < 46.8 && s_Swerve.calculateAngleToSpeaker() > 20.89) { 
+            double angleTargetAsPosition = Math.abs(s_Swerve.calculateAngleToSpeaker() - 50) * 0.00231214; // -50 and 0.00231214
+            if (angleTargetAsPosition > 0) {
+                shooterSubsystem.setAnglePosition(angleTargetAsPosition);
+            }
+        } else {
+            shooterSubsystem.setAnglePosition(0);
         }
-
-
+        })
+        );
+    }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -633,6 +692,15 @@ public class RobotContainer {
 
     public Command Drive5MetersAuto() {
        return new PathPlannerAuto("Drive5MetersAuto");
+    }
+
+
+    public Command midAuto() {
+       return new PathPlannerAuto("midAuto");
+    }
+
+    public Command newMidAuto() {
+       return new PathPlannerAuto("newMidAuto");
     }
 
 }

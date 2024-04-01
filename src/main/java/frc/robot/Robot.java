@@ -32,8 +32,7 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  private final LED LEDSubsystem = new LED();
-
+  //private final LED LEDSubsystem = new LED();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -47,9 +46,9 @@ public class Robot extends TimedRobot {
     CameraServer.startAutomaticCapture();
     CameraServer.getVideo();
 
-    // Orchestra m_orchestra = new Orchestra();
+    //Orchestra m_orchestra = new Orchestra();
 
-    // m_orchestra.addInstrument(RobotContainer.intakeSubsystem.intakeMotor);
+    // m_orchestra.addInstrument(RobotContainer.shooterSubsystem.leftShooterMotor);
 
     // var status = m_orchestra.loadMusic("");
 

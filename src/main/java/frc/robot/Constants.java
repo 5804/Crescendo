@@ -82,9 +82,9 @@ public final class Constants {
         public static final double angleKD = chosenModule.angleKD;
 
         /* Drive Motor PID Values */
-        public static final double driveKP = 2.5; //TODO: This must be tuned to specific robot
+        public static final double driveKP = 3.59; //TODO: This must be tuned to specific robot // 3.59
         public static final double driveKI = 0.0;
-        public static final double driveKD = 0.01;
+        public static final double driveKD = 0.0;
         public static final double driveKF = 0;
 
         /* Drive Motor Characterization Values From SYSID */
@@ -145,10 +145,10 @@ public final class Constants {
     }
 
     public static final class AutoConstants { //TODO: The below constants are used in the example auto, and must be tuned to specific robot
-        public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
+        public static final double kMaxSpeedMetersPerSecond = 3; // 3
+        public static final double kMaxAccelerationMetersPerSecondSquared = 3; // 3
+        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI; // Math.PI
+        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI; // Math.PI
     
         public static final double kPXController = 2.43;
         public static final double kPYController = 1.7;

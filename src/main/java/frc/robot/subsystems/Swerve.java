@@ -12,6 +12,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.ctre.phoenix.music.Orchestra;
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -30,6 +32,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.units.Voltage;
@@ -53,6 +56,7 @@ public class Swerve extends SubsystemBase {
     public void voltageDrive(Measure<Voltage> volts) {
         for (SwerveModule mod : mSwerveMods) {
             mod.setSpeed(volts);
+            mod.mAngleMotor.setControl(mod.anglePosition.withPosition(0));
         }
     }
 
@@ -66,26 +70,62 @@ public class Swerve extends SubsystemBase {
 
     private final MutableMeasure<Velocity<Distance>> m_velocity = mutable(MetersPerSecond.of(0));
 
-    SysIdRoutine routine = new SysIdRoutine(
-    new SysIdRoutine.Config(),
+    public SysIdRoutine routine = new SysIdRoutine(
+    new SysIdRoutine.Config(
+        null,
+        null,
+        null,
+
+        (state)->SignalLogger.writeString("state", state.toString())
+    ),
     new SysIdRoutine.Mechanism(this::voltageDrive,
-    log -> {
-        for (SwerveModule mod : mSwerveMods) {
-            double voltage = mod.mDriveMotor.getMotorVoltage().getValueAsDouble();
+    null
+    // log -> {        
+    //     SwerveModule mod = mSwerveMods[0];
+    //     double voltage = mod.mDriveMotor.getMotorVoltage().getValueAsDouble();
+    //     log.motor("frontLeft")
+    //         .voltage(m_appliedVoltage.mut_replace(voltage * RobotController.getBatteryVoltage(), Volts))
+    //         .linearPosition(m_distance.mut_replace(mod.mDriveMotor.getPosition().getValueAsDouble(), Meters))
+    //         .linearVelocity(m_velocity.mut_replace(mod.mDriveMotor.getVelocity().getValueAsDouble(), MetersPerSecond));
+
+    //     mod = mSwerveMods[1];
+    //     voltage = mod.mDriveMotor.getMotorVoltage().getValueAsDouble();
+    //     log.motor("frontRight")
+    //         .voltage(m_appliedVoltage.mut_replace(voltage * RobotController.getBatteryVoltage(), Volts))
+    //         .linearPosition(m_distance.mut_replace(mod.mDriveMotor.getPosition().getValueAsDouble(), Meters))
+    //         .linearVelocity(m_velocity.mut_replace(mod.mDriveMotor.getVelocity().getValueAsDouble(), MetersPerSecond));
         
-        log.motor("frontLeft")
-        .voltage(
-            m_appliedVoltage.mut_replace(
-                voltage * RobotController.getBatteryVoltage(), Volts))
-            .linearPosition(m_distance.mut_replace(mod.getCANcoder().getDistance(), Meters))
-            .linearVelocity(
-                m_velocity.mut_replace(mod.getCANcoder()., MetersPerSecond));
-        }
-    }
+    //     mod = mSwerveMods[2];
+    //     voltage = mod.mDriveMotor.getMotorVoltage().getValueAsDouble();
+    //     log.motor("backLeft")
+    //         .voltage(m_appliedVoltage.mut_replace(voltage * RobotController.getBatteryVoltage(), Volts))
+    //         .linearPosition(m_distance.mut_replace(mod.mDriveMotor.getPosition().getValueAsDouble(), Meters))
+    //         .linearVelocity(m_velocity.mut_replace(mod.mDriveMotor.getVelocity().getValueAsDouble(), MetersPerSecond));
+        
+    //     mod = mSwerveMods[3];
+    //     voltage = mod.mDriveMotor.getMotorVoltage().getValueAsDouble();
+    //     log.motor("backRight")
+    //         .voltage(m_appliedVoltage.mut_replace(voltage * RobotController.getBatteryVoltage(), Volts))
+    //         .linearPosition(m_distance.mut_replace(mod.mDriveMotor.getPosition().getValueAsDouble(), Meters))
+    //         .linearVelocity(m_velocity.mut_replace(mod.mDriveMotor.getVelocity().getValueAsDouble(), MetersPerSecond));
+
+    // }
     , this)
+
 );
 
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return routine.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return routine.dynamic(direction);
+    }
+
     public Swerve() {
+        setName("FrontLeftDrive");
+
         gyro = new Pigeon2(Constants.Swerve.pigeonID, "torch");
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(0);
@@ -125,7 +165,15 @@ public class Swerve extends SubsystemBase {
                 this // Reference to this subsystem to set requirements
         );
 
-        
+        BaseStatusSignal.setUpdateFrequencyForAll(250,
+            mSwerveMods[0].mDriveMotor.getPosition(),
+            mSwerveMods[0].mDriveMotor.getVelocity(),
+            mSwerveMods[0].mDriveMotor.getMotorVoltage());
+
+            mSwerveMods[0].mDriveMotor.optimizeBusUtilization();
+
+            SignalLogger.start();
+            
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
@@ -260,7 +308,7 @@ public class Swerve extends SubsystemBase {
     }
 
     // Limelight
-    NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    public NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     // how many degrees back is your limelight rotated from perfectly vertical?
     double limelightMountAngleDegrees = 31; 
 
@@ -268,7 +316,7 @@ public class Swerve extends SubsystemBase {
     double limelightLensHeightInches = 10.25; 
 
     // distance from the target to the floor
-    double goalHeightInches = 58;
+    public double goalHeightInches = 58;
 
     //calculate distance from speaker
     public double calculateDistanceFromSpeaker() { 

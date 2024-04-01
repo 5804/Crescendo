@@ -22,7 +22,7 @@ public class SwerveModule {
     public int moduleNumber;
     private Rotation2d angleOffset;
 
-    private TalonFX mAngleMotor;
+    public TalonFX mAngleMotor;
     public TalonFX mDriveMotor; // Probably should not be public, but it's probably fine
     private CANcoder angleEncoder;
 
@@ -33,7 +33,7 @@ public class SwerveModule {
     private final VelocityVoltage driveVelocity = new VelocityVoltage(0);
 
     /* angle motor control requests */
-    private final PositionVoltage anglePosition = new PositionVoltage(0);
+    public final PositionVoltage anglePosition = new PositionVoltage(0);
 
     public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants){
         this.moduleNumber = moduleNumber;
