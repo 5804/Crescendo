@@ -3,6 +3,7 @@ package frc.robot;
 import java.util.List;
 
 import com.ctre.phoenix.music.Orchestra;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -10,6 +11,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -118,7 +120,7 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         NamedCommands.registerCommand("transform", transform());
-        NamedCommands.registerCommand("intake", smartIntake());
+        NamedCommands.registerCommand("intake", autoIntake());
         NamedCommands.registerCommand("shoot", smartShoot());
         NamedCommands.registerCommand("startShoot", startShoot());
         NamedCommands.registerCommand("thirdNoteShoot", smartShootThirdNote());
@@ -130,7 +132,7 @@ public class RobotContainer {
         // NamedCommands.registerCommand("stopIndexer", stopIndexer());
         NamedCommands.registerCommand("shootWithTOF", shootWithTOF());
 
-        NamedCommands.registerCommand("index", indexWithTOF());
+        NamedCommands.registerCommand("index", autoIndex());
         NamedCommands.registerCommand("stow", stowParallel());
         NamedCommands.registerCommand("secondNoteShoot", smartSecondNoteShoot());
         NamedCommands.registerCommand("limelightAim", limeLightAutoAim());
@@ -232,7 +234,7 @@ public class RobotContainer {
         
         driver.b().onTrue(shooterSubsystem.amp());
 
-        driver.y().onTrue(limeLightAutoAim());
+        driver.y().whileTrue(limelightAutoAimAlign());
 
         
         // driver.x().whileTrue(s_Swerve.sysIdQuasistatic(Direction.kForward));
@@ -246,7 +248,7 @@ public class RobotContainer {
         driver.rightTrigger(0.5).whileTrue(
             shooterSubsystem.setShooterSpeed(1)
             // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 95;})
-            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setRainbowCommand()))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setRedCommand()))
             .finallyDo(() -> {
                 shooterSubsystem.load(0);
                 shooterSubsystem.shoot(0);
@@ -257,7 +259,7 @@ public class RobotContainer {
 
         driver.leftBumper().onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
         driver.rightBumper().whileTrue(smartClimb());
-        driver.rightBumper().onTrue(LEDSubsystem.setRainbowCommand());
+        driver.rightBumper().onTrue(LEDSubsystem.setRedCommand());
 
         driver.back().onTrue(shooterSubsystem.shootFromNotePosition());
 
@@ -267,6 +269,7 @@ public class RobotContainer {
         b1.onTrue(shooterSubsystem.climbPosition());
         b5.whileTrue(smartOuttake());
         b3.onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
+        b2.onTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
 
         // driver.povRight().whileTrue(intakeSubsystem.raiseIntake());
         // driver.povLeft().whileTrue(intakeSubsystem.lowerIntake());
@@ -301,14 +304,23 @@ public class RobotContainer {
     }
 
     public Command indexWithTOF() {
-        return shooterSubsystem.setIndexerSpeed(-0.05)
+        return shooterSubsystem.setIndexerSpeed(-0.3) // -0.05
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.setGreenCommand()))
+            .withName("INDEX NOTE WITH TOF");
+    }
+
+    public Command autoIndex() {
+        return shooterSubsystem.setIndexerSpeed(-0.05) // -0.05
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
             .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.setGreenCommand()))
             .withName("INDEX NOTE WITH TOF");
     }
 
     public Command smartClimb() {
-           return shooterSubsystem.climb()
+           return
+            new InstantCommand(() -> shooterSubsystem.activateRatchet())
+            .andThen(shooterSubsystem.climb())
             // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.03;})
             .finallyDo(() -> {shooterSubsystem.activateRatchet();})
             .withName("Climbing");
@@ -327,6 +339,33 @@ public class RobotContainer {
             .andThen(new InstantCommand(() -> {shooterSubsystem.load(0);}))
             .andThen(new InstantCommand(() -> {intakeSubsystem.load(0);}))
             .andThen(indexWithTOF())
+            .finallyDo(() -> {
+                intakeSubsystem.load(0);
+                shooterSubsystem.setAnglePosition(0);
+                if (shooterSubsystem.TOF.getRange() > 165){
+                    LEDSubsystem.red();
+                } else if (shooterSubsystem.TOF.getRange() > 110){
+                    // shooterSubsystem.lowerNote();
+                    LEDSubsystem.yellow();
+                } else {
+                    LEDSubsystem.GreenFlow();
+                }
+            });
+        }
+
+    public Command autoIntake() {
+        return 
+            (shooterSubsystem.setShooterSpeedCommand(0.0))
+                .andThen(
+                new ParallelCommandGroup(
+                (shooterSubsystem.setIndexerSpeed(1)),
+                intakeSubsystem.setIntakeSpeed(0.8),
+                new InstantCommand(() -> {shooterSubsystem.setAnglePosition(0.0225);}) // 0.0125
+                ))
+            .until(() -> {return shooterSubsystem.TOF.getRange() < 165;})
+            .andThen(new InstantCommand(() -> {shooterSubsystem.load(0);}))
+            .andThen(new InstantCommand(() -> {intakeSubsystem.load(0);}))
+            .andThen(autoIndex())
             .finallyDo(() -> {
                 intakeSubsystem.load(0);
                 shooterSubsystem.setAnglePosition(0);
@@ -410,7 +449,7 @@ public class RobotContainer {
             return
             shooterSubsystem.setShooterSpeed(1)
             .andThen(shooterSubsystem.setIndexerSpeed(0.8))
-            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;}) // 400
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
@@ -467,19 +506,47 @@ public class RobotContainer {
 
 
 
+    // public Command limelightAutoAimAlign() {
+    //     return limeLightAutoAim().andThen(s_Swerve.limeLightAutoAlign());
+    // }
+
+    public Command limelightAutoAimAlign() {
+        return new ParallelCommandGroup(s_Swerve.limeLightAutoAlign(), limeLightAutoAim());
+        // return s_Swerve.limeLightAutoAlign().andThen(limeLightAutoAim());
+    }
+
+    public Command limelightAutoStageAim() {
+        return new ParallelCommandGroup(s_Swerve.limelightStageAlign(), shooterSubsystem.shootFromNotePosition());
+    }
+
     public Command limeLightAutoAim() {
-        return (new InstantCommand(() -> {
-        if (s_Swerve.calculateAngleToSpeaker() < 46.8 && s_Swerve.calculateAngleToSpeaker() > 20.89) { 
-            double angleTargetAsPosition = Math.abs(s_Swerve.calculateAngleToSpeaker() - 50) * 0.00231214; // -50 and 0.00231214
+        return (new RunCommand(() -> {
+        if (shooterSubsystem.calculateAngleToSpeaker() < 46.8 && shooterSubsystem.calculateAngleToSpeaker() > 20.89) { 
+            double angleTargetAsPosition = Math.abs(shooterSubsystem.calculateAngleToSpeaker() - 50) * 0.00231214; // -50 and 0.00231214
             if (angleTargetAsPosition > 0) {
                 shooterSubsystem.setAnglePosition(angleTargetAsPosition);
             }
-        } else {
-            shooterSubsystem.setAnglePosition(0);
-        }
+        } //else {
+        //     shooterSubsystem.setAnglePosition(0);
+        // }
         })
         );
     }
+
+    // public Command limeLightAutoAim() {
+    //     return (new RunCommand(() -> {
+    //     if (s_Swerve.calculateAngleToSpeaker() < 46.8 && s_Swerve.calculateAngleToSpeaker() > 20.89) { 
+    //         double angleTargetAsPosition = Math.abs(s_Swerve.calculateAngleToSpeaker() - 50) * 0.00231214; // -50 and 0.00231214
+    //         if (angleTargetAsPosition > 0) {
+    //             shooterSubsystem.setAnglePosition(angleTargetAsPosition);
+    //         }
+    //     } //else {
+    //     //     shooterSubsystem.setAnglePosition(0);
+    //     // }
+    //     })
+    //     );
+    // }
+
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
@@ -703,4 +770,81 @@ public class RobotContainer {
        return new PathPlannerAuto("newMidAuto");
     }
 
+/* 
+    // simple proportional turning control with Limelight.
+    // "proportional control" is a control algorithm in which the output is proportional to the error.
+    // in this case, we are going to return an angular velocity that is proportional to the 
+    // "tx" value from the Limelight.
+    double limelight_aim_proportional()
+    {    
+    // kP (constant of proportionality)
+    // this is a hand-tuned number that determines the aggressiveness of our proportional control loop
+    // if it is too high, the robot will oscillate around.
+    // if it is too low, the robot will never reach its target
+    // if the robot never turns in the correct direction, kP should be inverted.
+    double kP = .035;
+
+    // tx ranges from (-hfov/2) to (hfov/2) in degrees. If your target is on the rightmost edge of 
+    // your limelight 3 feed, tx should return roughly 31 degrees.
+    double targetingAngularVelocity = s_Swerve.table.getTX("limelight") * kP;
+
+    // convert to radians per second for our drive method
+    targetingAngularVelocity *= Constants.Swerve.kMaxAngularSpeedRadiansPerSecond;
+
+    //invert since tx is positive when the target is to the right of the crosshair
+    targetingAngularVelocity *= -1.0;
+
+    return targetingAngularVelocity;
+  }
+
+  // simple proportional ranging control with Limelight's "ty" value
+  // this works best if your Limelight's mount height and target mount height are different.
+  // if your limelight and target are mounted at the same or similar heights, use "ta" (area) for target ranging rather than "ty"
+  double limelight_range_proportional()
+  {    
+    double kP = .1;
+    double targetingForwardSpeed = LimelightHelpers.getTY("limelight") * kP;
+    targetingForwardSpeed *= Constants.Swerve.maxSpeed;
+    targetingForwardSpeed *= -1.0;
+    return targetingForwardSpeed;
+  }
+
+  private void drive(boolean fieldRelative) {
+    // Get the x speed. We are inverting this because Xbox controllers return
+    // negative values when we push forward.
+    var xSpeed =
+        -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
+            * Constants.Swerve.maxSpeed;
+
+    // Get the y speed or sideways/strafe speed. We are inverting this because
+    // we want a positive value when we pull to the left. Xbox controllers
+    // return positive values when you pull to the right by default.
+    var ySpeed =
+        -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
+            * Constants.Swerve.maxSpeed;
+
+    // Get the rate of angular rotation. We are inverting this because we want a
+    // positive value when we pull to the left (remember, CCW is positive in
+    // mathematics). Xbox controllers return positive values when you pull to
+    // the right by default.
+    var rot =
+        -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
+            * Drivetrain.kMaxAngularSpeed;
+
+    // while the A-button is pressed, overwrite some of the driving values with the output of our limelight methods
+    if(driver.y().getAsBoolean() == true)
+    {
+        final var rot_limelight = limelight_aim_proportional();
+        rot = rot_limelight;
+
+        final var forward_limelight = limelight_range_proportional();
+        xSpeed = forward_limelight;
+
+        //while using Limelight, turn off field-relative driving.
+        fieldRelative = false;
+    }
+
+    s_Swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+  }
+*/
 }

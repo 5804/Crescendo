@@ -12,6 +12,7 @@ import com.ctre.phoenix.led.TwinkleAnimation;
 import com.ctre.phoenix.led.TwinkleAnimation.TwinklePercent;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -113,6 +114,12 @@ public class LED extends SubsystemBase {
     candle2.animate(colorflow);
   }
 
+   public static void redFlow() {
+    ColorFlowAnimation colorflow = new ColorFlowAnimation(225, 0, 0);
+    candle1.animate(colorflow);
+    candle2.animate(colorflow);
+  }
+
   public static void orange(){
     candle1.setLEDs(255, 150, 0);
   }
@@ -137,6 +144,14 @@ public class LED extends SubsystemBase {
     return runOnce(
         () -> {
             GreenFlow();
+        }
+    );
+  }
+
+  public Command setRedCommand() {
+    return runOnce(
+        () -> {
+            redFlow();
         }
     );
   }

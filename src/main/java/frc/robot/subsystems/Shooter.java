@@ -18,6 +18,9 @@ import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,6 +41,7 @@ public class Shooter extends SubsystemBase {
   public Rotation2d angleOffset;
   public TimeOfFlight TOF;
   public PWM ratchet;
+  public NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight-vision");
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -256,6 +260,23 @@ public class Shooter extends SubsystemBase {
     );
   }
 
+    //calculate angle to speaker
+    // how many degrees back is your limelight rotated from perfectly vertical?
+    double limelightMountAngleDegrees = 31; 
+
+    // distance from the center of the Limelight lens to the floor
+    double limelightLensHeightInches = 10.25; 
+
+    // distance from the target to the floor
+    public double goalHeightInches = 58;
+    public double calculateAngleToSpeaker() { 
+        NetworkTableEntry ty = table.getEntry("ty");
+        double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+        double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+        //double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+        return angleToGoalDegrees;
+    }
+
   public void activateRatchet() {
     ratchet.setPosition(0);
   }
@@ -281,9 +302,9 @@ public class Shooter extends SubsystemBase {
       public Command shootFromNotePosition() {
         return run(
             () -> {
-                setAnglePosition(.055); // 0.06
+                setAnglePosition(.16); // 0.06
             }
-        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.15;});
       }
 
       public Command autoLastNotePosition() {
@@ -401,6 +422,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("ShooterMotorVelocity", rightShooterAngleMotor.getVelocity().getValue());
     SmartDashboard.putNumber("TimeOfFlightSensor", TOF.getRange());
     SmartDashboard.putNumber("RatchetPosition", rotations.getDegrees());
+    SmartDashboard.putNumber("Angle to goal", calculateAngleToSpeaker());
   }
 
 }

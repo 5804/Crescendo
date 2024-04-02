@@ -12,6 +12,7 @@ import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -80,16 +81,24 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
   }
 
+   
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
+
+ 
   public void disabledInit() {
+    
+    
+       
         // LEDSubsystem.Off();
         // LEDSubsystem.SetAnimationFire();
         // LEDSubsystem.Fire();
   }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override

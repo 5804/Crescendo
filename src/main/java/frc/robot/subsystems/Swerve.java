@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Value;
 
 import com.ctre.phoenix.music.Orchestra;
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -21,6 +22,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -308,7 +310,7 @@ public class Swerve extends SubsystemBase {
     }
 
     // Limelight
-    public NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+    public NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight-vision");
     // how many degrees back is your limelight rotated from perfectly vertical?
     double limelightMountAngleDegrees = 31; 
 
@@ -317,6 +319,8 @@ public class Swerve extends SubsystemBase {
 
     // distance from the target to the floor
     public double goalHeightInches = 58;
+
+    public double stageHeightInches = 48.8125;
 
     //calculate distance from speaker
     public double calculateDistanceFromSpeaker() { 
@@ -328,12 +332,68 @@ public class Swerve extends SubsystemBase {
     }
 
     //calculate angle to speaker
-    public double calculateAngleToSpeaker() { 
-        NetworkTableEntry ty = table.getEntry("ty");
-        double targetOffsetAngle_Vertical = ty.getDouble(0.0);
-        double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
-        //double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-        return angleToGoalDegrees;
+    // public double calculateAngleToSpeaker() { 
+    //     NetworkTableEntry ty = table.getEntry("ty");
+    //     double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+    //     double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+    //     //double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+    //     return angleToGoalDegrees;
+    // }
+
+    // simple proportional turning control with Limelight.
+    // "proportional control" is a control algorithm in which the output is proportional to the error.
+    // in this case, we are going to return an angular velocity that is proportional to the 
+    // "tx" value from the Limelight.
+    public double limelight_aim_proportional()
+    {    
+        // kP (constant of proportionality)
+        // this is a hand-tuned number that determines the aggressiveness of our proportional control loop
+        // if it is too high, the robot will oscillate around.
+        // if it is too low, the robot will never reach its target
+        // if the robot never turns in the correct direction, kP should be inverted.
+        double kP = .001;
+
+        // tx ranges from (-hfov/2) to (hfov/2) in degrees. If your target is on the rightmost edge of 
+        // your limelight 3 feed, tx should return roughly 31 degrees.
+        double targetingAngularVelocity = table.getEntry("tx").getDouble(0.0) * kP;
+
+        // convert to radians per second for our drive method
+        targetingAngularVelocity *= (Math.PI * 12);
+
+        //invert since tx is positive when the target is to the right of the crosshair
+        targetingAngularVelocity *= -1.0;
+
+        return targetingAngularVelocity;
+    }
+
+    public Command limeLightAutoAlign() {
+        return run(
+            () -> {
+                double rotationValue = limelight_aim_proportional();
+                drive(
+                    new Translation2d(0, 0), 
+                    rotationValue, 
+                    false,
+                    true
+                );
+            }
+        );
+        // .until(() -> {return table.getEntry("tx").getDouble(0.0) > -0.05 && table.getEntry("tx").getDouble(0.0) < 0.05;});
+    }
+
+    public Command limelightStageAlign() {
+        return run(
+            () -> {
+                double rotationValue = limelight_aim_proportional() + 15;
+                drive(
+                    new Translation2d(0, 0), 
+                    rotationValue, 
+                    false,
+                    true
+                );
+            }
+        );
+        // .until(() -> {return table.getEntry("tx").getDouble(0.0) > -0.05 && table.getEntry("tx").getDouble(0.0) < 0.05;});
     }
 
     @Override
@@ -353,7 +413,6 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putNumber("Angle", swerveOdometry.getPoseMeters().getRotation().getDegrees());
 
         SmartDashboard.putNumber("ty", table.getEntry("ty").getDouble(0.0));
-        SmartDashboard.putNumber("Angle to goal", calculateAngleToSpeaker());
         SmartDashboard.putNumber("Distance from Speaker", calculateDistanceFromSpeaker());
     }
 
