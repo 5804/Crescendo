@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.6,
-      "y": 4.55
+      "x": 0.7357394615942444,
+      "y": 4.274958269850641
     },
     "rotation": -60.0
   },
@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "startShoot"
+            "name": "aimAndShoot"
           }
         },
         {
@@ -26,13 +26,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "midfieldPath"
+            "pathName": "outside1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "outside2"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "startShoot"
+            "name": "aimAndShoot"
           }
         }
       ]

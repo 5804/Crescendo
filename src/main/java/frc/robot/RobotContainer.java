@@ -199,7 +199,7 @@ public class RobotContainer {
         // );
 
         chooser.addOption("Mid Auto", midAuto());
-        chooser.addOption("New Mid Auto", newMidAuto());
+        chooser.addOption("Outside Auto", outsideAuto());
 
        /*  chooser.addOption("Quick Test", quickTest()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -456,7 +456,7 @@ public class RobotContainer {
 
     public Command aimAndShoot() {
             return
-            limeLightAutoAim()
+            limeLightAutoAim().withTimeout(1)
             .andThen(shooterSubsystem.setShooterSpeed(1))
             .andThen(shooterSubsystem.setIndexerSpeed(0.8))
             .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
@@ -766,8 +766,12 @@ public class RobotContainer {
        return new PathPlannerAuto("midAuto");
     }
 
-    public Command newMidAuto() {
-       return new PathPlannerAuto("newMidAuto");
+    public Command oldeMidAuto() {
+       return new PathPlannerAuto("midfieldAuto");
+    }
+
+    public Command outsideAuto() {
+       return new PathPlannerAuto("outsideAuto");
     }
 
 /* 
