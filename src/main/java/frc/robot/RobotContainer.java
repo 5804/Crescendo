@@ -234,7 +234,10 @@ public class RobotContainer {
         
         driver.b().onTrue(shooterSubsystem.amp());
 
-        driver.y().whileTrue(limelightAutoAimAlign());
+        // driver.y().whileTrue(limelightAutoAimAlign());
+        driver.y().whileTrue(limelightAimAndFire());
+
+        
 
         
         // driver.x().whileTrue(s_Swerve.sysIdQuasistatic(Direction.kForward));
@@ -454,6 +457,12 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
 
+    public Command shootNoTOF() {
+        return
+            shooterSubsystem.setShooterSpeed(1)
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+    }
+
     public Command aimAndShoot() {
             return
             limeLightAutoAim().withTimeout(1)
@@ -509,7 +518,15 @@ public class RobotContainer {
     // public Command limelightAutoAimAlign() {
     //     return limeLightAutoAim().andThen(s_Swerve.limeLightAutoAlign());
     // }
-
+    public Command limelightAimAndFire() {
+        return limelightAutoAimAlign().withTimeout(0.75)
+            .andThen(shootNoTOF().withTimeout(0.5))
+            .finallyDo(() -> {
+                shooterSubsystem.setAnglePosition(0);
+                shooterSubsystem.shoot(0.0);
+                shooterSubsystem.load(0.0);
+            });
+    }
     public Command limelightAutoAimAlign() {
         return new ParallelCommandGroup(s_Swerve.limeLightAutoAlign(), limeLightAutoAim());
         // return s_Swerve.limeLightAutoAlign().andThen(limeLightAutoAim());
