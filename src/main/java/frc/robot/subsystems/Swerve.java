@@ -318,9 +318,9 @@ public class Swerve extends SubsystemBase {
     double limelightLensHeightInches = 10.25; 
 
     // distance from the target to the floor
-    public double goalHeightInches = 58;
+    public double goalHeightInches = 53; //58
 
-    public double stageHeightInches = 48.8125;
+    public double stageHeightInches = 48.8125; // UNUSED
 
     //calculate distance from speaker
     public double calculateDistanceFromSpeaker() { 

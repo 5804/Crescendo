@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.31,
+      "y": 5.57
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "transform"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5butbetter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5butbetter2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "aimAndShoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5butbetter3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5butbetter4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5butbetter5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

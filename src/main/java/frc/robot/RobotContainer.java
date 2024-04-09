@@ -172,6 +172,10 @@ public class RobotContainer {
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
 
+        chooser.addOption("MidSpeaker5NoteAutoBlue", MidSpeaker5NoteAutoBlue()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+
         chooser.addOption("MidSpeaker4NoteAuto", MidSpeaker4NoteAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
@@ -236,7 +240,7 @@ public class RobotContainer {
 
         // driver.y().whileTrue(limelightAutoAimAlign());
         driver.y().whileTrue(limelightAimAndFire());
-
+        // driver.y().onFalse(new InstantCommand(() -> shooterSubsystem.setAnglePosition(0)));
         
 
         
@@ -264,7 +268,7 @@ public class RobotContainer {
         driver.rightBumper().whileTrue(smartClimb());
         driver.rightBumper().onTrue(LEDSubsystem.setRedCommand());
 
-        driver.back().onTrue(shooterSubsystem.shootFromNotePosition());
+        driver.back().whileTrue(limelightAutoAlignAndFireAtAmp()); 
 
         driver.povUp().whileTrue(shooterSubsystem.increaseShooterPos());
         driver.povDown().whileTrue(shooterSubsystem.decreaseShooterPos());
@@ -463,6 +467,18 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setIndexerSpeed(0.8));
     }
 
+    public Command shootNoTOFWithTargetCheck() {
+        if (s_Swerve.table.getEntry("tv").getInteger(0) == 1)
+        {
+            return
+                shooterSubsystem.setShooterSpeed(1)
+                .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+        } else {
+            return shooterSubsystem.setShooterSpeed(0);
+        }
+       
+    }
+
     public Command aimAndShoot() {
             return
             limeLightAutoAim().withTimeout(1)
@@ -527,9 +543,26 @@ public class RobotContainer {
                 shooterSubsystem.load(0.0);
             });
     }
+
     public Command limelightAutoAimAlign() {
         return new ParallelCommandGroup(s_Swerve.limeLightAutoAlign(), limeLightAutoAim());
         // return s_Swerve.limeLightAutoAlign().andThen(limeLightAutoAim());
+    }
+
+    public Command limelightAutoAlignAndFireAtAmp() {
+        return
+        new ParallelCommandGroup(s_Swerve.limeLightAutoAlign(), shooterSubsystem.shootFromNotePosition()).withTimeout(0.5)
+        //s_Swerve.limeLightAutoAlign().withTimeout(0.5)
+        // .andThen(() -> {
+        //     shooterSubsystem.setAnglePosition(.16);})
+        // .until(() -> {return shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() > 0.19;})
+        //.andThen(shooterSubsystem.shootFromNotePosition())
+        .andThen(shootNoTOF()) // .withTimeout(0.5))
+        .finallyDo(() -> {
+            shooterSubsystem.setAnglePosition(0);
+            shooterSubsystem.shoot(0.0);
+            shooterSubsystem.load(0.0);
+        });
     }
 
     public Command limelightAutoStageAim() {
@@ -761,6 +794,10 @@ public class RobotContainer {
     public Command MidSpeaker5NoteAuto() {
         return new PathPlannerAuto("MidSpeaker5NoteAuto");
     }
+
+    public Command MidSpeaker5NoteAutoBlue() {
+        return new PathPlannerAuto("MidSpeaker5NoteAutoBlue");
+    }
     
    /*  public Command quickTest() {
         return new PathPlannerAuto("quickTest");
@@ -777,7 +814,6 @@ public class RobotContainer {
     public Command Drive5MetersAuto() {
        return new PathPlannerAuto("Drive5MetersAuto");
     }
-
 
     public Command midAuto() {
        return new PathPlannerAuto("midAuto");
