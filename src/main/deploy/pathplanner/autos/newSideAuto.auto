@@ -1,0 +1,73 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.6630730971658731,
+      "y": 4.41
+    },
+    "rotation": -60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "transform"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "newSide1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "newSide2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "newSide3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "aimAndShootAuto"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "newSide4butnotrlydontdelete"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "newSide5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "aimAndShootAuto"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

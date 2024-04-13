@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.31,
-      "y": 5.57
+      "x": 0.67,
+      "y": 4.46
     },
-    "rotation": 0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -18,63 +18,45 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "transform"
+            "pathName": "crazy1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "5butbetter"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "startShoot"
+            "pathName": "crazy2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "5butbetter2"
+            "pathName": "crazy3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "aimAndShoot"
+            "name": "aimAndShootAuto"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "5butbetter3"
+            "pathName": "newSide4butnotrlydontdelete"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "5butbetter4"
+            "pathName": "crazy5"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "startShoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "5butbetter5"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "startShoot"
+            "name": "aimAndShootAuto"
           }
         }
       ]

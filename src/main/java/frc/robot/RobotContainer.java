@@ -137,6 +137,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("secondNoteShoot", smartSecondNoteShoot());
         NamedCommands.registerCommand("limelightAim", limeLightAutoAim());
         NamedCommands.registerCommand("aimAndShoot", aimAndShoot());
+        NamedCommands.registerCommand("aimAndShootAuto", aimAndShootAuto());
+
+        NamedCommands.registerCommand("shooot", smartShaneNoteShoot());
         
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
@@ -180,7 +183,7 @@ public class RobotContainer {
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
 
-         chooser.addOption("Drive5MetersAuto", Drive5MetersAuto()
+         chooser.addOption("crazyAuto", crazyAuto()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         ); 
 
@@ -191,7 +194,7 @@ public class RobotContainer {
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // );
 
-         chooser.addOption("LoadSide3NoteAuto", LoadSide3NoteAuto()
+         chooser.addOption("fivebutbetterauto", fivebutbetterauto()
              .finallyDo(() -> {s_Swerve.zeroHeading();})
              );
 
@@ -239,7 +242,10 @@ public class RobotContainer {
         driver.b().onTrue(shooterSubsystem.amp());
 
         // driver.y().whileTrue(limelightAutoAimAlign());
+        //driver.y().whileTrue(limelightAimAndFire());
+
         driver.y().whileTrue(limelightAimAndFire());
+
         // driver.y().onFalse(new InstantCommand(() -> shooterSubsystem.setAnglePosition(0)));
         
 
@@ -252,15 +258,23 @@ public class RobotContainer {
         driver.start().onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
 
         
-        driver.rightTrigger(0.5).whileTrue(
-            shooterSubsystem.setShooterSpeed(1)
+        driver.rightTrigger(0.5).whileTrue((
+            new InstantCommand(() -> {
+                if (shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.135) {
+                    shooterSubsystem.setAnglePosition(0.013);
+                }
+            })
+            .andThen(shooterSubsystem.setShooterSpeed(1))
             // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 95;})
             .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setRedCommand()))
             .finallyDo(() -> {
                 shooterSubsystem.load(0);
                 shooterSubsystem.shoot(0);
-            })
-            );
+                if (shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.135) {
+                    shooterSubsystem.setAnglePosition(0);
+                }
+            
+            })));
             
         driver.leftTrigger(.2).whileTrue(smartIntake());
 
@@ -488,6 +502,18 @@ public class RobotContainer {
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
         }
+    
+    public Command aimAndShootAuto() {
+        return
+        shooterSubsystem.setIndexerSpeed(-0.8) // -0.05
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
+            .andThen(shooterSubsystem.setIndexerSpeedRunOnce(0))
+       .andThen( limeLightAutoAim().withTimeout(.5))
+        .andThen(shooterSubsystem.setShooterSpeed(1))
+        .andThen(shooterSubsystem.setIndexerSpeed(1).withTimeout(0.2)) 
+        .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+        .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
+    }
 
     public Command smartSecondNoteShoot() {
         return
@@ -520,6 +546,18 @@ public class RobotContainer {
         // .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0));
     }
 
+    public Command smartShaneNoteShoot() {
+        return
+        // indexWithTOF()
+        (shooterSubsystem.setShooterSpeed(1))
+        .andThen((shooterSubsystem.autoShaneNotePosition()))
+        .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+        .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+        .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+        .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+        .andThen(() -> {shooterSubsystem.setAnglePosition(0);});
+    }
+
 
     // WIP limelight auto aiming DO NOT RUN
     //  step 1 get angle when at speaker
@@ -535,13 +573,25 @@ public class RobotContainer {
     //     return limeLightAutoAim().andThen(s_Swerve.limeLightAutoAlign());
     // }
     public Command limelightAimAndFire() {
-        return limelightAutoAimAlign().withTimeout(0.75)
+        return limelightAutoAimAlign().withTimeout(0.75) // 0.75
             .andThen(shootNoTOF().withTimeout(0.5))
             .finallyDo(() -> {
                 shooterSubsystem.setAnglePosition(0);
                 shooterSubsystem.shoot(0.0);
                 shooterSubsystem.load(0.0);
             });
+    }
+
+    // DO NOT USE FOR MATCHES
+    public Command limelightAimAndFireDEBUG() {
+        return limelightAutoAimAlign().withTimeout(0.75)
+            .andThen(shootNoTOF().withTimeout(0.5))
+            .finallyDo(() -> {
+                //shooterSubsystem.setAnglePosition(0);
+                shooterSubsystem.shoot(0.0);
+                shooterSubsystem.load(0.0);
+            })
+            ;
     }
 
     public Command limelightAutoAimAlign() {
@@ -571,14 +621,65 @@ public class RobotContainer {
 
     public Command limeLightAutoAim() {
         return (new RunCommand(() -> {
-        if (shooterSubsystem.calculateAngleToSpeaker() < 46.8 && shooterSubsystem.calculateAngleToSpeaker() > 20.89) { 
-            double angleTargetAsPosition = Math.abs(shooterSubsystem.calculateAngleToSpeaker() - 50) * 0.00231214; // -50 and 0.00231214
+        if (shooterSubsystem.calculateAngleToSpeaker() < 46.8 && shooterSubsystem.calculateAngleToSpeaker() > 15.89) { 
+            double angleTargetAsPosition = Math.abs(shooterSubsystem.calculateAngleToSpeaker() - 54) * 0.00231214; // 51.623 // 54 and 0.00231214
             if (angleTargetAsPosition > 0) {
                 shooterSubsystem.setAnglePosition(angleTargetAsPosition);
             }
         } //else {
         //     shooterSubsystem.setAnglePosition(0);
         // }
+        })
+        );
+    }
+    // Angle to goal on left, angle of shooter on right
+    public double[][] lookUpTable = {
+        {46.40, 0.00347}, 
+        {43.90, 0.009}, 
+        {41.90, 0.013},
+        {39.90, 0.017},
+        {37.70, 0.022},
+        {35.87, 0.027}, 
+        {34.55, 0.030}, 
+        {33.18, 0.033},
+        {32.12, 0.036},
+        {30.70, 0.039},
+        {29.52, 0.042}, 
+        {28.45, 0.045}, 
+        {27.29, 0.046},
+        {26.56, 0.049},
+        {25.66, 0.052},
+        {24.92, 0.052}, 
+        {24.19, 0.0615}, //.59
+        {23.48, 0.055},
+        {22.72, 0.058},
+        {22.19, 0.058},
+        {21.70, 0.060}, 
+        {21.23, 0.066}, //.061
+        {20.80, 0.061},
+        {20.25, 0.059}
+    };
+
+    public Command limeLightAutoAimLookupTable() {
+        return (new RunCommand(() -> {
+            int i2 = 0;
+            for(int i = 0; i < lookUpTable.length - 1; i++) {
+                if (shooterSubsystem.calculateAngleToSpeaker() <= lookUpTable[i][0] && shooterSubsystem.calculateAngleToSpeaker() >= lookUpTable[i + 1][0]) {
+                    i2 = i;
+                    //shooterSubsystem.setAnglePosition(lookUpTable[i][1]);
+                   // System.out.println(i2);
+                   shooterSubsystem.setAnglePosition(lookUpTable[i2][1]);
+                }
+              //  System.out.println(i2 + 1);
+            }
+            
+
+            // if (i2 > 0 && i2 < lookUpTable.length) {
+            //     shooterSubsystem.setAnglePosition(lookUpTable[i2 - 1][1]);
+            // }
+            // else {
+            //     shooterSubsystem.setAnglePosition(lookUpTable[i2][1]);
+            // }
         })
         );
     }
@@ -807,12 +908,12 @@ public class RobotContainer {
         return new PathPlannerAuto("MidSpeaker4NoteAuto");
     }
 
-    public Command LoadSide3NoteAuto() {
-       return new PathPlannerAuto("LoadSide3NoteAuto");
+    public Command fivebutbetterauto() {
+       return new PathPlannerAuto("fivebutbetterauto");
     }
 
-    public Command Drive5MetersAuto() {
-       return new PathPlannerAuto("Drive5MetersAuto");
+    public Command crazyAuto() {
+       return new PathPlannerAuto("crazyAuto");
     }
 
     public Command midAuto() {

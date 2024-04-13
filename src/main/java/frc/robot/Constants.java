@@ -94,9 +94,9 @@ public final class Constants {
 
         /* Swerve Profiling Values */
         /** Meters per Second */
-        public static final double maxSpeed = 4.5; //TODO: This must be tuned to specific robot
+        public static final double maxSpeed = 8; //TODO: This must be tuned to specific robot //4.5
         /** Radians per Second */
-        public static final double maxAngularVelocity = Math.PI * 2; //TODO: This must be tuned to specific robot
+        public static final double maxAngularVelocity = Math.PI * 3; //TODO: This must be tuned to specific robot
 
         /* Neutral Modes */
         public static final NeutralModeValue angleNeutralMode = NeutralModeValue.Coast;
@@ -125,7 +125,7 @@ public final class Constants {
         
         /* Back Left Module - Module 2 - Back Left */
         public static final class Mod2 { //TODO: This must be tuned to specific robot
-            public static final int driveMotorID = 32;
+            public static final int driveMotorID = 32;//32
             public static final int angleMotorID = 31;
             public static final int canCoderID = 30;
             public static final Rotation2d angleOffset = Rotation2d.fromDegrees(116.894531); //178.945313 //-84.199219) // -92.37

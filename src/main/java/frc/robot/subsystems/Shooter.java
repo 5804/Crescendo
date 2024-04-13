@@ -268,7 +268,7 @@ public class Shooter extends SubsystemBase {
     double limelightLensHeightInches = 10.25; 
 
     // distance from the target to the floor
-    public double goalHeightInches = 58;
+    public double goalHeightInches = 53.875;
     public double calculateAngleToSpeaker() { 
         NetworkTableEntry ty = table.getEntry("ty");
         double targetOffsetAngle_Vertical = ty.getDouble(0.0);
@@ -329,6 +329,14 @@ public class Shooter extends SubsystemBase {
                 setAnglePosition(.0578); // .058
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.033;});
+      }
+
+      public Command autoShaneNotePosition() {
+        return run(
+            () -> {
+                setAnglePosition(.078); // .078
+            }
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.06;});
       }
 
       public Command climb() {

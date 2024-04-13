@@ -318,7 +318,7 @@ public class Swerve extends SubsystemBase {
     double limelightLensHeightInches = 10.25; 
 
     // distance from the target to the floor
-    public double goalHeightInches = 53; //58
+    public double goalHeightInches = 53.875; //58
 
     public double stageHeightInches = 48.8125; // UNUSED
 
@@ -351,14 +351,14 @@ public class Swerve extends SubsystemBase {
         // if it is too high, the robot will oscillate around.
         // if it is too low, the robot will never reach its target
         // if the robot never turns in the correct direction, kP should be inverted.
-        double kP = .001;
+        double kP = 0.025; // 0.001 // 0.02 // 0.025
 
         // tx ranges from (-hfov/2) to (hfov/2) in degrees. If your target is on the rightmost edge of 
         // your limelight 3 feed, tx should return roughly 31 degrees.
         double targetingAngularVelocity = table.getEntry("tx").getDouble(0.0) * kP;
 
         // convert to radians per second for our drive method
-        targetingAngularVelocity *= (Math.PI * 12);
+        targetingAngularVelocity *= (Math.PI * 2); // 12 // 2
 
         //invert since tx is positive when the target is to the right of the crosshair
         targetingAngularVelocity *= -1.0;
@@ -373,7 +373,7 @@ public class Swerve extends SubsystemBase {
         // if it is too high, the robot will oscillate around.
         // if it is too low, the robot will never reach its target
         // if the robot never turns in the correct direction, kP should be inverted.
-        double kP = .001;
+        double kP = .002;
 
         // tx ranges from (-hfov/2) to (hfov/2) in degrees. If your target is on the rightmost edge of 
         // your limelight 3 feed, tx should return roughly 31 degrees.
