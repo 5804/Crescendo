@@ -47,23 +47,6 @@
           ]
         }
       }
-    },
-    {
-      "name": "transform",
-      "waypointRelativePos": 0,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "transform"
-              }
-            }
-          ]
-        }
-      }
     }
   ],
   "globalConstraints": {

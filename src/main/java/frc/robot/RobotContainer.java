@@ -59,6 +59,7 @@ import frc.robot.subsystems.Swerve;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
     /* Controllers */
     // private final CommandXboxController controller = new CommandXboxController(0);
     private final CommandXboxController driver = new CommandXboxController(0);
@@ -140,6 +141,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("aimAndShootAuto", aimAndShootAuto());
 
         NamedCommands.registerCommand("shooot", smartShaneNoteShoot());
+        NamedCommands.registerCommand("defaultShooterAngle", defaultShooterAngle());
         
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
@@ -208,6 +210,9 @@ public class RobotContainer {
         chooser.addOption("Mid Auto", midAuto());
         chooser.addOption("Outside Auto", outsideAuto());
 
+        chooser.addOption("Mid Test", midTestAuto());
+        chooser.addOption("ampSideAuto", ampSideAuto());
+
        /*  chooser.addOption("Quick Test", quickTest()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         ); */
@@ -244,7 +249,7 @@ public class RobotContainer {
         // driver.y().whileTrue(limelightAutoAimAlign());
         //driver.y().whileTrue(limelightAimAndFire());
 
-        driver.y().whileTrue(limelightAimAndFire());
+        driver.y().whileTrue(new ParallelCommandGroup(limelightAimAndFire(), LEDSubsystem.Red()));
 
         // driver.y().onFalse(new InstantCommand(() -> shooterSubsystem.setAnglePosition(0)));
         
@@ -261,12 +266,12 @@ public class RobotContainer {
         driver.rightTrigger(0.5).whileTrue((
             new InstantCommand(() -> {
                 if (shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.135) {
-                    shooterSubsystem.setAnglePosition(0.013);
+                    shooterSubsystem.setAnglePosition(0.015);//.015
                 }
             })
             .andThen(shooterSubsystem.setShooterSpeed(1))
             // .until(() -> {return shooterSubsystem.leftShooterMotor.getVelocity().getValue() > 95;})
-            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.setRedCommand()))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedNoFinallyDo(.8), LEDSubsystem.Red()))
             .finallyDo(() -> {
                 shooterSubsystem.load(0);
                 shooterSubsystem.shoot(0);
@@ -280,7 +285,7 @@ public class RobotContainer {
 
         driver.leftBumper().onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
         driver.rightBumper().whileTrue(smartClimb());
-        driver.rightBumper().onTrue(LEDSubsystem.setRedCommand());
+        driver.rightBumper().onTrue(LEDSubsystem.Red());
 
         driver.back().whileTrue(limelightAutoAlignAndFireAtAmp()); 
 
@@ -289,6 +294,7 @@ public class RobotContainer {
 
         b1.onTrue(shooterSubsystem.climbPosition());
         b5.whileTrue(smartOuttake());
+        b6.whileTrue(runIntake());
         b3.onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
         b2.onTrue(new InstantCommand(() -> {shooterSubsystem.activateRatchet();}));
 
@@ -327,14 +333,14 @@ public class RobotContainer {
     public Command indexWithTOF() {
         return shooterSubsystem.setIndexerSpeed(-0.3) // -0.05
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
-            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.setGreenCommand()))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.Green()))
             .withName("INDEX NOTE WITH TOF");
     }
 
     public Command autoIndex() {
         return shooterSubsystem.setIndexerSpeed(-0.05) // -0.05
             .until(() -> {return shooterSubsystem.TOF.getRange() > 165;})
-            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.setGreenCommand()))
+            .andThen(new ParallelCommandGroup(shooterSubsystem.setIndexerSpeedRunOnce(0), LEDSubsystem.Green()))
             .withName("INDEX NOTE WITH TOF");
     }
 
@@ -364,18 +370,18 @@ public class RobotContainer {
                 intakeSubsystem.load(0);
                 shooterSubsystem.setAnglePosition(0);
                 if (shooterSubsystem.TOF.getRange() > 165){
-                    LEDSubsystem.red();
+                    LEDSubsystem.Red();
                 } else if (shooterSubsystem.TOF.getRange() > 110){
                     // shooterSubsystem.lowerNote();
-                    LEDSubsystem.yellow();
+                    // LEDSubsystem.yellow();
                 } else {
-                    LEDSubsystem.GreenFlow();
+                    LEDSubsystem.Green();
                 }
             });
         }
 
     public Command autoIntake() {
-        return 
+        return
             (shooterSubsystem.setShooterSpeedCommand(0.0))
                 .andThen(
                 new ParallelCommandGroup(
@@ -391,12 +397,12 @@ public class RobotContainer {
                 intakeSubsystem.load(0);
                 shooterSubsystem.setAnglePosition(0);
                 if (shooterSubsystem.TOF.getRange() > 165){
-                    LEDSubsystem.red();
+                    LEDSubsystem.Red();
                 } else if (shooterSubsystem.TOF.getRange() > 110){
                     // shooterSubsystem.lowerNote();
-                    LEDSubsystem.yellow();
+                    // LEDSubsystem.yellow();
                 } else {
-                    LEDSubsystem.GreenFlow();
+                    LEDSubsystem.Green();
                 }
             });
         }
@@ -414,13 +420,21 @@ public class RobotContainer {
                 intakeSubsystem.load(0);
                 shooterSubsystem.setAnglePosition(0);
                 if (shooterSubsystem.TOF.getRange() > 165){
-                    LEDSubsystem.red();
+                    LEDSubsystem.Red();
                 } else if (shooterSubsystem.TOF.getRange() > 110){
                     // shooterSubsystem.lowerNote();
-                    LEDSubsystem.yellow();
+                    // LEDSubsystem.yellow();
                 } else {
-                    LEDSubsystem.GreenFlow();
+                    LEDSubsystem.Green();
                 }
+            });
+        }
+        
+    public Command runIntake() {
+        return  
+            intakeSubsystem.setIntakeSpeed(-1)
+            .finallyDo(() -> {
+                intakeSubsystem.load(0);
             });
         }
 
@@ -556,6 +570,11 @@ public class RobotContainer {
         .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
         .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
         .andThen(() -> {shooterSubsystem.setAnglePosition(0);});
+    }
+
+    public Command defaultShooterAngle() {
+        return new InstantCommand(
+        () -> {shooterSubsystem.setAnglePosition(0);});
     }
 
 
@@ -928,6 +947,12 @@ public class RobotContainer {
        return new PathPlannerAuto("outsideAuto");
     }
 
+    public Command midTestAuto() {
+        return new PathPlannerAuto("TESTfivebutbetterauto");
+    }
+public Command ampSideAuto() {
+        return new PathPlannerAuto("ampSideAuto");
+    }
 /* 
     // simple proportional turning control with Limelight.
     // "proportional control" is a control algorithm in which the output is proportional to the error.

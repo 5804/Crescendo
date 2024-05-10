@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.67,
-      "y": 4.46
+      "x": 0.66,
+      "y": 6.67
     },
-    "rotation": -60.0
+    "rotation": 60.0
   },
   "command": {
     "type": "sequential",
@@ -26,19 +26,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "crazy1"
+            "pathName": "ampSide1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "crazy2"
+            "pathName": "ampSide2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "crazy3"
+            "pathName": "ampSide2.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ampSide3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ampSide4"
           }
         },
         {
@@ -50,19 +68,19 @@
         {
           "type": "named",
           "data": {
-            "name": "defaultShooterAngle"
+            "name": "startShoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "newSide4butnotrlydontdelete"
+            "pathName": "ampSide5"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "crazy5"
+            "pathName": "ampSide6"
           }
         },
         {
@@ -74,7 +92,7 @@
         {
           "type": "named",
           "data": {
-            "name": "defaultShooterAngle"
+            "name": "startShoot"
           }
         }
       ]
