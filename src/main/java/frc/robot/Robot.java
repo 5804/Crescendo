@@ -125,7 +125,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     m_robotContainer.shooterSubsystem.deactivateRatchet();
-    swerveDriveFXConfig.Slot0.kP = Constants.Swerve.driveKP;
+    // swerveDriveFXConfig.Slot0.kP = Constants.Swerve.driveKP;
 
     LEDSubsystem.Off();
   }
