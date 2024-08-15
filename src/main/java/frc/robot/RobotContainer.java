@@ -143,6 +143,9 @@ public class RobotContainer {
         NamedCommands.registerCommand("shooot", smartShaneNoteShoot());
         NamedCommands.registerCommand("defaultShooterAngle", defaultShooterAngle());
         
+
+        
+
         s_Swerve.resetModulesToAbsolute();
         s_Swerve.resetModulesToAbsolute();
 
@@ -189,8 +192,8 @@ public class RobotContainer {
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         ); 
 
-        // chooser.addOption("1m Straight",
-        //      new PathPlannerAuto("1mStraightPathAuto"));
+        chooser.addOption("1m Straight",
+             new PathPlannerAuto("1mStraightPathAuto"));
 
         // chooser.addOption("2 Piece Auto Test", twoNoteAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -212,6 +215,10 @@ public class RobotContainer {
 
         chooser.addOption("Mid Test", midTestAuto());
         chooser.addOption("ampSideAuto", ampSideAuto());
+
+        chooser.addOption("Four Note Test", fourNoteTest());
+
+        chooser.addOption("PID Test", pidTest());
 
        /*  chooser.addOption("Quick Test", quickTest()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -952,6 +959,14 @@ public class RobotContainer {
     }
 public Command ampSideAuto() {
         return new PathPlannerAuto("ampSideAuto");
+    }
+
+    public Command fourNoteTest() {
+        return new PathPlannerAuto("4testauto");
+    }
+
+    public Command pidTest() {
+        return new PathPlannerAuto("PIDTest");
     }
 /* 
     // simple proportional turning control with Limelight.

@@ -16,6 +16,9 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
 import frc.lib.util.SwerveModuleConstants;
 
 public final class Constants {
+    public static final double speedMultiplier = 1; // Should be a value between 0 (not moving) and 1 (full speed) // SAMANTHA THIS IS THE VALUE THAT YOU CHANGE TO ADJUST THE MAX SPEED
+    
+    
     public static final double stickDeadband = 0.1;
 
     public static final class Intake {
@@ -82,7 +85,7 @@ public final class Constants {
         public static final double angleKD = chosenModule.angleKD;
 
         /* Drive Motor PID Values */
-        public static final double driveKP = 3.59; //TODO: This must be tuned to specific robot // 3.59
+        public static final double driveKP = 1.5; //TODO: This must be tuned to specific robot // 3.59
         public static final double driveKI = 0.0;
         public static final double driveKD = 0.0;
         public static final double driveKF = 0;
@@ -94,7 +97,7 @@ public final class Constants {
 
         /* Swerve Profiling Values */
         /** Meters per Second */
-        public static final double maxSpeed = 8; //TODO: This must be tuned to specific robot //4.5
+        public static final double maxSpeed = 8; //TODO: This must be tuned to specific robot //4.5 // 8 
         /** Radians per Second */
         public static final double maxAngularVelocity = Math.PI * 3; //TODO: This must be tuned to specific robot
 
