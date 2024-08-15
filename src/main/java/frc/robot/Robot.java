@@ -33,7 +33,7 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  //private final LED LEDSubsystem = new LED();
+  private final LED LEDSubsystem = new LED();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -46,6 +46,8 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     CameraServer.startAutomaticCapture();
     CameraServer.getVideo();
+
+    LEDSubsystem.Off();
 
     //Orchestra m_orchestra = new Orchestra();
 
@@ -87,12 +89,7 @@ public class Robot extends TimedRobot {
 
  
   public void disabledInit() {
-    
-    
-       
-        // LEDSubsystem.Off();
-        // LEDSubsystem.SetAnimationFire();
-        // LEDSubsystem.Fire();
+      // LEDSubsystem.();
   }
 
   @Override
@@ -110,6 +107,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    LEDSubsystem.Green();
   }
 
   /** This function is called periodically during autonomous. */
@@ -126,6 +125,9 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     m_robotContainer.shooterSubsystem.deactivateRatchet();
+    // swerveDriveFXConfig.Slot0.kP = Constants.Swerve.driveKP;
+
+    LEDSubsystem.Off();
   }
 
   /** This function is called periodically during operator control. */

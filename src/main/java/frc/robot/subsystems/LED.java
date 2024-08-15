@@ -40,30 +40,54 @@ public class LED extends SubsystemBase {
     candle2.setLEDs(r, g, b);
   }
 
-  public static void Off() {
-    candle1.setLEDs(0, 0, 0);
-    candle2.setLEDs(0, 0, 0);
-  }
+  // public static void Off() {
+  //   candle1.setLEDs(0, 0, 0);
+  //   candle2.setLEDs(0, 0, 0);
+  // }
 
-  public Command lightsOff() {
+  // public Command lightsOff() {
+  //   return runOnce(
+  //       () -> {
+  //           Off();
+  //       }
+  //   );
+  // }
+
+  public Command Off() {
     return runOnce(
         () -> {
-            Off();
+          LEDColor(0,0,0);
         }
     );
   }
 
-  public static void Rainbow(int num) {
-    RainbowAnimation rainbowAnim = new RainbowAnimation(1, .5, num);
-    candle1.animate(rainbowAnim);
-    candle2.animate(rainbowAnim);
+  public Command Green() {
+    return runOnce(
+      () -> {
+        LEDColor(0, 255, 0);
+      }
+    );
   }
 
-  public static void Rainbow() {
-    RainbowAnimation rainbowAnim = new RainbowAnimation(1, .5, 100);
-    candle1.animate(rainbowAnim);
-    candle2.animate(rainbowAnim);
+  public Command Red() {
+    return runOnce(
+      () -> {
+        LEDColor(255, 0, 0);
+      }
+    );
   }
+
+  // public static void Rainbow(int num) {
+  //   RainbowAnimation rainbowAnim = new RainbowAnimation(1, .5, num);
+  //   candle1.animate(rainbowAnim);
+  //   candle2.animate(rainbowAnim);
+  // }
+
+  // public static void Rainbow() {
+  //   RainbowAnimation rainbowAnim = new RainbowAnimation(1, .5, 100);
+  //   candle1.animate(rainbowAnim);
+  //   candle2.animate(rainbowAnim);
+  // }
 
   public static void StrobeGreen() {
     StrobeAnimation strobe = new StrobeAnimation(0, 255, 0);
@@ -100,13 +124,13 @@ public class LED extends SubsystemBase {
     );
   }
 
-  public Command setRainbowCommand() {
-    return runOnce(
-        () -> {
-            Rainbow();
-        }
-    );
-  }
+  // public Command setRainbowCommand() {
+  //   return runOnce(
+  //       () -> {
+  //           Rainbow();
+  //       }
+  //   );
+  // }
 
   public static void GreenFlow() {
     ColorFlowAnimation colorflow = new ColorFlowAnimation(0, 255, 0);
@@ -120,25 +144,25 @@ public class LED extends SubsystemBase {
     candle2.animate(colorflow);
   }
 
-  public static void orange(){
-    candle1.setLEDs(255, 150, 0);
-  }
+  // public static void orange(){
+  //   candle1.setLEDs(255, 150, 0);
+  // }
 
-  public static void red(){
-    candle1.setLEDs(255, 0, 0);
-  }
+  // public static void red(){
+  //   candle1.setLEDs(255, 0, 0);
+  // }
 
-   public static void yellow(){
-    candle1.setLEDs(255, 255, 0);
-  }
+  //  public static void yellow(){
+  //   candle1.setLEDs(255, 255, 0);
+  // }
 
-  public Command setOrangeCommand(){
-    return runOnce( 
-      () -> {
-        orange();
-      }
-    );
-  }
+  // public Command setOrangeCommand(){
+  //   return runOnce( 
+  //     () -> {
+  //       orange();
+  //     }
+  //   );
+  // }
 
   public Command setGreenCommand() {
     return runOnce(
@@ -157,7 +181,7 @@ public class LED extends SubsystemBase {
   }
 
   public static void Fire() {
-    FireAnimation fireAnim = new FireAnimation();
+    FireAnimation fireAnim = new FireAnimation(1, 1, 15, 1, 1, false, 0);
     candle1.animate(fireAnim);
     candle2.animate(fireAnim);
   }
@@ -172,22 +196,22 @@ public class LED extends SubsystemBase {
 
   public boolean greenDebounce = true;
 
-  @Override
-  public void periodic() {
-    if (!DriverStation.getJoystickIsXbox(0)) {
-      DriverStation.reportError("Rescan!!!!", false);
-      candle1.animate(null);
-      candle2.animate(null);
-      candle1.setLEDs(255, 0, 0);
-      candle2.setLEDs(255, 0, 0);
-      greenDebounce = false;
-    } else {
-      if (greenDebounce == false) {
-        RainbowAnimation rainbowAnim = new RainbowAnimation(1, .5, 100);
-        candle1.animate(rainbowAnim);
-        candle2.animate(rainbowAnim);
-        greenDebounce = true;
-      }
-    }
-  }
+  // @Override
+  // public void periodic() {
+  //   if (!DriverStation.getJoystickIsXbox(0)) {
+  //     DriverStation.reportError("Rescan!!!!", false);
+  //     candle1.animate(null);
+  //     candle2.animate(null);
+  //     candle1.setLEDs(255, 0, 0);
+  //     candle2.setLEDs(255, 0, 0);
+  //     greenDebounce = false;
+  //   } else {
+  //     if (greenDebounce == false) {
+  //       RainbowAnimation rainbowAnim = new RainbowAnimation(1, .5, 100);
+  //       candle1.animate(rainbowAnim);
+  //       candle2.animate(rainbowAnim);
+  //       greenDebounce = true;
+  //     }
+  //   }
+  // }
 }

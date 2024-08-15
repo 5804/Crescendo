@@ -36,6 +36,18 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "startShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "defaultShooterAngle"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "5butbetter3"
@@ -75,12 +87,6 @@
           "type": "named",
           "data": {
             "name": "startShoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "5butbetter6"
           }
         }
       ]

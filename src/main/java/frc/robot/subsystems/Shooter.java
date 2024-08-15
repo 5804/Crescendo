@@ -56,7 +56,7 @@ public class Shooter extends SubsystemBase {
 
     TOF = new TimeOfFlight(3);
     TOF.setRangingMode(RangingMode.Short, 30);
-    ratchet = new PWM(0);
+    ratchet = new PWM(2);
 
     var talonFXConfigs = new TalonFXConfiguration();
     talonFXConfigs.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
@@ -298,13 +298,21 @@ public class Shooter extends SubsystemBase {
         // );
       }
 
-      // SHANE CHANGE THIS VALUE
+      // SHANE CHANGE THIS VALUE // OR DONT
       public Command shootFromNotePosition() {
         return run(
             () -> {
                 setAnglePosition(.16); // 0.06
             }
         ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.15;});
+      }
+
+      public Command smartIntakePositionCommand() {
+        return run(
+            () -> {
+                setAnglePosition(.0225); // 0.06
+            }
+        ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.0175 && angleEncoder.getAbsolutePosition().getValue() < 0.0275;});
       }
 
       public Command autoLastNotePosition() {
@@ -382,6 +390,15 @@ public class Shooter extends SubsystemBase {
         //     }
         // );
       }
+
+      // public Command smartIntakePositionCommand() {
+      //   return run(
+      //       () -> {
+      //           setAnglePosition(0.0225); // 0.06
+      //       }
+      //   ).until(() -> {return angleEncoder.getAbsolutePosition().getValue() > 0.020;});
+      // }
+
 
       public boolean hasNote() {
         // double range = TOF.getRange();
