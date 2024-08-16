@@ -100,6 +100,11 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    Robot.ctreConfigs.swerveDriveFXConfig.Slot0.kP = 1.5;
+    for (int i=0; i<m_robotContainer.s_Swerve.mSwerveMods.length; i++) {
+      m_robotContainer.s_Swerve.mSwerveMods [i].mDriveMotor.getConfigurator().apply(Robot.ctreConfigs.swerveDriveFXConfig);
+    }
+
     m_robotContainer.shooterSubsystem.deactivateRatchet();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -125,6 +130,10 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     m_robotContainer.shooterSubsystem.deactivateRatchet();
+    Robot.ctreConfigs.swerveDriveFXConfig.Slot0.kP = 3.59;
+    for (int i=0; i<m_robotContainer.s_Swerve.mSwerveMods.length; i++) {
+      m_robotContainer.s_Swerve.mSwerveMods [i].mDriveMotor.getConfigurator().apply(Robot.ctreConfigs.swerveDriveFXConfig);
+    }
     // swerveDriveFXConfig.Slot0.kP = Constants.Swerve.driveKP;
 
     LEDSubsystem.Off();
