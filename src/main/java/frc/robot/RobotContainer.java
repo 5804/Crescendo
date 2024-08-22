@@ -220,6 +220,8 @@ public class RobotContainer {
 
         chooser.addOption("PID Test", pidTest());
 
+        chooser.addOption("Choreo Test", ChoreoTest());
+
        /*  chooser.addOption("Quick Test", quickTest()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         ); */
@@ -968,6 +970,11 @@ public Command ampSideAuto() {
     public Command pidTest() {
         return new PathPlannerAuto("PIDTest");
     }
+
+    public Command ChoreoTest() {
+        return new PathPlannerAuto("ChoreoTest");
+    }
+
 /* 
     // simple proportional turning control with Limelight.
     // "proportional control" is a control algorithm in which the output is proportional to the error.
