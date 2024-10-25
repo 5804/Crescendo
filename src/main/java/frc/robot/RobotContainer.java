@@ -62,8 +62,8 @@ public class RobotContainer {
 
     /* Controllers */
     // private final CommandXboxController controller = new CommandXboxController(0);
-    private final CommandXboxController driver = new CommandXboxController(0);
-    private final Joystick buttonBoard = new Joystick(1);
+    private final CommandXboxController driver = new CommandXboxController(1);
+    private final Joystick buttonBoard = new Joystick(2);
     Timer timer = new Timer();
     /* Drive Controls */
     private final int translationAxis = XboxController.Axis.kLeftY.value;
@@ -99,8 +99,8 @@ public class RobotContainer {
     // Create config for trajectory
         TrajectoryConfig config =
             new TrajectoryConfig(
-                    3,
-                    2)
+                    4, // 3
+                    2) // 2
                 // Add kinematics to ensure max speed is actually obeyed
                 .setKinematics(Constants.Swerve.swerveKinematics);
                 // Apply the voltage constraint
@@ -176,21 +176,21 @@ public class RobotContainer {
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         ); */
 
-        chooser.addOption("MidSpeaker5NoteAuto", MidSpeaker5NoteAuto()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        );
+        // chooser.addOption("MidSpeaker5NoteAuto", MidSpeaker5NoteAuto()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
 
-        chooser.addOption("MidSpeaker5NoteAutoBlue", MidSpeaker5NoteAutoBlue()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        );
+        // chooser.addOption("MidSpeaker5NoteAutoBlue", MidSpeaker5NoteAutoBlue()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
 
-        chooser.addOption("MidSpeaker4NoteAuto", MidSpeaker4NoteAuto()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        );
+        // chooser.addOption("MidSpeaker4NoteAuto", MidSpeaker4NoteAuto()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
 
-         chooser.addOption("crazyAuto", crazyAuto()
-        .finallyDo(() -> {s_Swerve.zeroHeading();})
-        ); 
+        //  chooser.addOption("crazyAuto", crazyAuto()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // ); 
 
         chooser.addOption("1m Straight",
              new PathPlannerAuto("1mStraightPathAuto"));
@@ -199,9 +199,9 @@ public class RobotContainer {
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // );
 
-         chooser.addOption("fivebutbetterauto", fivebutbetterauto()
-             .finallyDo(() -> {s_Swerve.zeroHeading();})
-             );
+        //  chooser.addOption("fivebutbetterauto", fivebutbetterauto()
+        //      .finallyDo(() -> {s_Swerve.zeroHeading();})
+        //      );
 
         // chooser.addOption("4 Piece Auto", fourNoteAuto()
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -210,17 +210,31 @@ public class RobotContainer {
         // .finallyDo(() -> {s_Swerve.zeroHeading();})
         // );
 
-        chooser.addOption("Mid Auto", midAuto());
-        chooser.addOption("Outside Auto", outsideAuto());
+        // chooser.addOption("Mid Auto", midAuto());
+        // chooser.addOption("Outside Auto", outsideAuto());
 
-        chooser.addOption("Mid Test", midTestAuto());
-        chooser.addOption("ampSideAuto", ampSideAuto());
+        // chooser.addOption("Mid Test", midTestAuto());
+        // chooser.addOption("ampSideAuto", ampSideAuto());
 
-        chooser.addOption("Four Note Test", fourNoteTest());
+        // chooser.addOption("Four Note Test", fourNoteTest());
 
-        chooser.addOption("PID Test", pidTest());
+        // chooser.addOption("PID Test", pidTest());
 
-        chooser.addOption("Choreo Test", ChoreoTest());
+        // chooser.addOption("Choreo Test", ChoreoTest()
+        // .finallyDo(() -> {s_Swerve.zeroHeading();})
+        // );
+
+        chooser.addOption("5 Note Auto", Mid5NoteChoreo()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+        
+        chooser.addOption("4 Note Auto", Mid4NoteFinal()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+
+        chooser.addOption("Outside Auto", Outside3NoteChoreo()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
 
        /*  chooser.addOption("Quick Test", quickTest()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
@@ -293,6 +307,8 @@ public class RobotContainer {
         driver.leftTrigger(.2).whileTrue(smartIntake());
 
         driver.leftBumper().onTrue(new InstantCommand(() -> {shooterSubsystem.deactivateRatchet();}));
+
+        // CLIMB - DISABLE WHEN IT'S NOT A COMPETITION
         driver.rightBumper().whileTrue(smartClimb());
         driver.rightBumper().onTrue(LEDSubsystem.Red());
 
@@ -491,7 +507,12 @@ public class RobotContainer {
     
     public Command startShoot() {
             return
-            shooterSubsystem.setShooterSpeed(1)
+            new InstantCommand(() -> {
+                if (shooterSubsystem.angleEncoder.getAbsolutePosition().getValue() < 0.135) {
+                    shooterSubsystem.setAnglePosition(0.015);//.015
+                }
+            })
+            .andThen(shooterSubsystem.setShooterSpeed(1))
             .andThen(shooterSubsystem.setIndexerSpeed(0.8))
             .until(() -> {return shooterSubsystem.TOF.getRange() > 400;}) // 400
             .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
@@ -973,6 +994,46 @@ public Command ampSideAuto() {
 
     public Command ChoreoTest() {
         return new PathPlannerAuto("ChoreoTest");
+    }
+
+    public Command Mid5NoteChoreo() {
+        return
+            (shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("Mid5NoteChoreo"))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+
+    }
+    public Command Mid4NoteFinal() {
+        return
+            (shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("Mid4NoteFinal"))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+
+    }
+    public Command Outside3NoteChoreo() {
+        return
+            (shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("Outside3NoteChoreo"))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+
     }
 
 /* 

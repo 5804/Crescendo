@@ -19,7 +19,7 @@ public final class Constants {
     public static final double speedMultiplier = 1; // Should be a value between 0 (not moving) and 1 (full speed) // SAMANTHA THIS IS THE VALUE THAT YOU CHANGE TO ADJUST THE MAX SPEED
     
     
-    public static final double stickDeadband = 0.1;
+    public static final double stickDeadband = 0.2; // 0.1
 
     public static final class Intake {
         public static final int kSlotIdx0 = 0;

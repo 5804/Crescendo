@@ -100,7 +100,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    Robot.ctreConfigs.swerveDriveFXConfig.Slot0.kP = 1.5;
+    Robot.ctreConfigs.swerveDriveFXConfig.Slot0.kP = 1.5; // 1.5 for pathplanner
     for (int i=0; i<m_robotContainer.s_Swerve.mSwerveMods.length; i++) {
       m_robotContainer.s_Swerve.mSwerveMods [i].mDriveMotor.getConfigurator().apply(Robot.ctreConfigs.swerveDriveFXConfig);
     }
