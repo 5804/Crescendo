@@ -62,8 +62,8 @@ public class RobotContainer {
 
     /* Controllers */
     // private final CommandXboxController controller = new CommandXboxController(0);
-    private final CommandXboxController driver = new CommandXboxController(1);
-    private final Joystick buttonBoard = new Joystick(2);
+    private final CommandXboxController driver = new CommandXboxController(0);
+    private final Joystick buttonBoard = new Joystick(1);
     Timer timer = new Timer();
     /* Drive Controls */
     private final int translationAxis = XboxController.Axis.kLeftY.value;
@@ -233,6 +233,10 @@ public class RobotContainer {
         );
 
         chooser.addOption("Outside Auto", Outside3NoteChoreo()
+        .finallyDo(() -> {s_Swerve.zeroHeading();})
+        );
+
+        chooser.addOption("Better Outside Auto", BetterOutside()
         .finallyDo(() -> {s_Swerve.zeroHeading();})
         );
 
@@ -1031,6 +1035,20 @@ public Command ampSideAuto() {
             .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
             .andThen(transform())
             .andThen(new PathPlannerAuto("Outside3NoteChoreo"))
+            .andThen(shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8));
+
+    }
+
+    public Command BetterOutside() {
+        return
+            (shooterSubsystem.setShooterSpeed(1))
+            .andThen(shooterSubsystem.setIndexerSpeed(0.8))
+            .until(() -> {return shooterSubsystem.TOF.getRange() > 400;})
+            .andThen(shooterSubsystem.setShooterSpeedCommand(0.0))
+            .andThen(shooterSubsystem.setIndexerSpeedCommand(0.0))
+            .andThen(transform())
+            .andThen(new PathPlannerAuto("BetterOutside"))
             .andThen(shooterSubsystem.setShooterSpeed(1))
             .andThen(shooterSubsystem.setIndexerSpeed(0.8));
 
